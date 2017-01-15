@@ -86,17 +86,17 @@
 
 <meta name="description" content="线性回归算法是最简单的机器学习算法，但是在实际当中用途非常广泛，这篇文章在总结线性回归算法的同时，一并介绍机器学习中的基本概念和求解过程，并通过Python实现整个算法。">
 <meta property="og:type" content="article">
-<meta property="og:title" content="机器学习概念与线性回归算法">
-<meta property="og:url" content="http://yoursite.com/机器学习/线性回归/index.html">
+<meta property="og:title" content="机器学习概念与线性回归">
+<meta property="og:url" content="http://yoursite.com/机器学习/机器学习概念与线性回归/index.html">
 <meta property="og:site_name" content="Akali's Room">
 <meta property="og:description" content="线性回归算法是最简单的机器学习算法，但是在实际当中用途非常广泛，这篇文章在总结线性回归算法的同时，一并介绍机器学习中的基本概念和求解过程，并通过Python实现整个算法。">
-<meta property="og:image" content="http://yoursite.com/机器学习/线性回归/损失函数的收敛.png">
-<meta property="og:image" content="http://yoursite.com/机器学习/线性回归/学习结果.png">
-<meta property="og:updated_time" content="2017-01-14T09:25:31.000Z">
+<meta property="og:image" content="http://yoursite.com/机器学习/机器学习概念与线性回归/损失函数的收敛.png">
+<meta property="og:image" content="http://yoursite.com/机器学习/机器学习概念与线性回归/学习结果.png">
+<meta property="og:updated_time" content="2017-01-15T15:30:06.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="机器学习概念与线性回归算法">
+<meta name="twitter:title" content="机器学习概念与线性回归">
 <meta name="twitter:description" content="线性回归算法是最简单的机器学习算法，但是在实际当中用途非常广泛，这篇文章在总结线性回归算法的同时，一并介绍机器学习中的基本概念和求解过程，并通过Python实现整个算法。">
-<meta name="twitter:image" content="http://yoursite.com/机器学习/线性回归/损失函数的收敛.png">
+<meta name="twitter:image" content="http://yoursite.com/机器学习/机器学习概念与线性回归/损失函数的收敛.png">
 
 
 
@@ -124,13 +124,13 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/机器学习/线性回归/"/>
+  <link rel="canonical" href="http://yoursite.com/机器学习/机器学习概念与线性回归/"/>
 
 
 
 
 
-  <title> 机器学习概念与线性回归算法 | Akali's Room </title>
+  <title> 机器学习概念与线性回归 | Akali's Room </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -243,7 +243,7 @@
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-  <link itemprop="mainEntityOfPage" href="http://yoursite.com/机器学习/线性回归/">
+  <link itemprop="mainEntityOfPage" href="http://yoursite.com/机器学习/机器学习概念与线性回归/">
 
   <span style="display:none" itemprop="author" itemscope itemtype="http://schema.org/Person">
     <meta itemprop="name" content="アカリ">
@@ -267,7 +267,7 @@
             
             
               
-                机器学习概念与线性回归算法
+                机器学习概念与线性回归
               
             
           </h1>
@@ -358,7 +358,7 @@
 <h2 id="&#x7EBF;&#x6027;&#x56DE;&#x5F52;&#x95EE;&#x9898;&#x6982;&#x5FF5;"><a href="#&#x7EBF;&#x6027;&#x56DE;&#x5F52;&#x95EE;&#x9898;&#x6982;&#x5FF5;" class="headerlink" title="&#x7EBF;&#x6027;&#x56DE;&#x5F52;&#x95EE;&#x9898;&#x6982;&#x5FF5;"></a>&#x7EBF;&#x6027;&#x56DE;&#x5F52;&#x95EE;&#x9898;&#x6982;&#x5FF5;</h2><p>&#x7EBF;&#x6027;&#x56DE;&#x5F52;&#x505A;&#x7684;&#x4E8B;&#x60C5;&#xFF0C;&#x662F;&#x6839;&#x636E;&#x7ED9;&#x5B9A;&#x7684;&#x4E00;&#x7EC4; $ (x,y) $&#xFF08; $ x $ &#x53EF;&#x80FD;&#x662F;&#x66F4;&#x9AD8;&#x7EF4;&#x7684;&#x5411;&#x91CF;&#xFF0C;$ y $ &#x4EE3;&#x8868;&#x7B54;&#x6848;&#xFF09;&#xFF0C;&#x5B66;&#x5F97;&#x4E00;&#x4E2A;<strong>&#x7EBF;&#x6027;&#x51FD;&#x6570;</strong> $ f $&#xFF0C;&#x4F7F;&#x5F97;&#x8FD9;&#x6761;&#x7EBF;&#x80FD;&#x591F;&#x6700;&#x597D;&#x5730;&#x62DF;&#x5408;&#x6240;&#x6709;&#x6837;&#x672C;&#x70B9;&#xFF0C;&#x6765;&#x5BF9;&#x65B0;&#x7684;&#x8F93;&#x5165;&#x5BF9;&#x5E94;&#x7684;&#x7B54;&#x6848;&#x8FDB;&#x884C;&#x9884;&#x6D4B;&#x3002;&#x4F8B;&#x5982;&#xFF0C;&#x6839;&#x636E;&#x9762;&#x79EF;&#x548C;&#x5367;&#x5BA4;&#x6570;&#x4E24;&#x4E2A;&#x53D8;&#x91CF;&#x6765;&#x9884;&#x6D4B;&#x623F;&#x4EF7;&#x3002;</p>
 <p>&#x5BF9;&#x4E8E;&#x591A;&#x4E2A;&#x7EF4;&#x5EA6;&#xFF0C;&#x6BCF;&#x4E2A;&#x4E0D;&#x540C;&#x7684;&#x7EF4;&#x5EA6;&#xFF0C;&#x5BF9;&#x9884;&#x6D4B;&#x7ED3;&#x679C;&#x90FD;&#x6709;&#x4E0D;&#x540C;&#x7A0B;&#x5EA6;&#x7684;&#x5F71;&#x54CD;&#xFF0C;&#x628A;&#x6BCF;&#x4E2A;&#x7EF4;&#x5EA6;&#x7684;&#x503C;&#x5199;&#x4F5C;x&#xFF0C;&#x628A;&#x5F71;&#x54CD;&#x6743;&#x91CD;&#x5199;&#x4F5C;&#x3B8;&#xFF0C;&#x6709;&#xFF1A;$ h{_&#x3B8;}(x) = &#x3B8;{_0} + &#x3B8;{_1}x{_1} + &#x3B8;{_2}x{_2} $ &#xFF0C;&#x5373; $ f(x) = &#x3B8;^Tx $ &#xFF0C;&#x8FD9;&#x91CC;&#x7684; $ &#x3B8;^T $ &#x5C31;&#x662F;&#x5B66;&#x4E60;&#x7684;&#x76EE;&#x6807;&#x3002;</p>
 <h2 id="&#x635F;&#x5931;&#x51FD;&#x6570;&#x7684;&#x6982;&#x5FF5;"><a href="#&#x635F;&#x5931;&#x51FD;&#x6570;&#x7684;&#x6982;&#x5FF5;" class="headerlink" title="&#x635F;&#x5931;&#x51FD;&#x6570;&#x7684;&#x6982;&#x5FF5;"></a>&#x635F;&#x5931;&#x51FD;&#x6570;&#x7684;&#x6982;&#x5FF5;</h2><p>&#x8FD9;&#x91CC;&#x7684;&#x4E00;&#x4E2A;&#x95EE;&#x9898;&#x662F;&#x5982;&#x4F55;&#x91CF;&#x5316;&#x5B66;&#x5F97;&#x7684; $ &#x3B8; $ &#x7A76;&#x7ADF;&#x51C6;&#x4E0D;&#x51C6;&#xFF0C;&#x4E5F;&#x5C31;&#x662F;&#x8BF4;&#xFF0C;&#x6211;&#x4EEC;&#x5B66;&#x5F97;&#x7684;&#x51FD;&#x6570;&#x662F; $ h{_&#x3B8;}(x) $ &#xFF0C; &#x90A3;&#x4E48;&#x6211;&#x4EEC;&#x9700;&#x8981;&#x4E00;&#x4E2A; $ f=J(h) $ &#x6765;&#x505A;&#x8861;&#x91CF;&#xFF0C;&#x5B83;&#x63CF;&#x8FF0;&#x6211;&#x4EEC;&#x7684;&#x7ED3;&#x679C;&#x548C;&#x6807;&#x51C6;&#x7B54;&#x6848;&#x4E4B;&#x95F4;&#x7684;&#x5DEE;&#x8DDD;&#xFF0C;&#x5373;&#x5B83;&#x7684;&#x7ED3;&#x679C;&#x8D8A;&#x5C0F;&#x5B66;&#x4E60;&#x6548;&#x679C;&#x5C31;&#x8D8A;&#x51C6;&#x786E;&#xFF0C;&#x8FD9;&#x91CC;&#x7684; $ J $ &#x5C31;&#x662F;<strong>&#x635F;&#x5931;&#x51FD;&#x6570;</strong>&#x3002;</p>
-<p>&#x5BF9;&#x4E8E;&#x5411;&#x91CF; $ &#x3B8; = [&#x3B8;{_0}, &#x3B8;{_1}, &#x3B8;{_2}, &#x2026;, &#x3B8;{<em>n}] $ &#xFF0C;&#x5047;&#x8BBE; $ i $ &#x662F;&#x6570;&#x636E;&#x96C6;&#x4E2D;&#x7684;&#x4E00;&#x884C;&#x6570;&#x636E;&#xFF0C;&#x6211;&#x4EEC;&#x4F30;&#x8BA1;&#x51FA;&#x7684;&#x7ED3;&#x679C;&#x662F; $ h{</em>&#x3B8;}(x^{(i)}) $ &#xFF0C;&#x800C;&#x6807;&#x51C6;&#x7B54;&#x6848;&#x662F; $ y^{(i)} $ &#xFF0C;&#x90A3;&#x4E48;&#x5728;&#x7EBF;&#x6027;&#x56DE;&#x5F52;&#x5F53;&#x4E2D;&#xFF0C;&#x635F;&#x5931;&#x51FD;&#x6570;&#x4E3A;&#xFF1A; $ J(&#x3B8;{_0}, &#x3B8;{_1}, &#x3B8;{_2}, &#x2026;, &#x3B8;{<em>n}) = \frac{1}{2m} \sum</em>{i=1}^m (h{_&#x3B8;}(x^{(i)}) - y^{(i)}) ^2 $</p>
+<p>&#x5BF9;&#x4E8E;&#x5411;&#x91CF; $$ &#x3B8; = [&#x3B8;{_0}, &#x3B8;{_1}, &#x3B8;{_2}, &#x2026;, &#x3B8;{<em>n}] $$ &#xFF0C;&#x5047;&#x8BBE; $ i $ &#x662F;&#x6570;&#x636E;&#x96C6;&#x4E2D;&#x7684;&#x4E00;&#x884C;&#x6570;&#x636E;&#xFF0C;&#x6211;&#x4EEC;&#x4F30;&#x8BA1;&#x51FA;&#x7684;&#x7ED3;&#x679C;&#x662F; $ h{</em>&#x3B8;}(x^{(i)}) $ &#xFF0C;&#x800C;&#x6807;&#x51C6;&#x7B54;&#x6848;&#x662F; $ y^{(i)} $ &#xFF0C;&#x90A3;&#x4E48;&#x5728;&#x7EBF;&#x6027;&#x56DE;&#x5F52;&#x5F53;&#x4E2D;&#xFF0C;&#x635F;&#x5931;&#x51FD;&#x6570;&#x4E3A;&#xFF1A; $ J(&#x3B8;{_0}, &#x3B8;{_1}, &#x3B8;{_2}, &#x2026;, &#x3B8;{<em>n}) = \frac{1}{2m} \sum</em>{i=1}^m (h{_&#x3B8;}(x^{(i)}) - y^{(i)}) ^2 $</p>
 <p>&#x8FD9;&#x4E2A;&#x516C;&#x5F0F;&#x5F53;&#x4E2D;&#x5206;&#x6BCD;&#x7684;2&#x662F;&#x4E3A;&#x4E86;&#x6C42;&#x5BFC;&#x65B9;&#x4FBF;&#xFF0C;&#x56E0;&#x4E3A;&#x8BAD;&#x7EC3;&#x96C6;&#x662F;&#x4F1A;&#x6709;&#x53D8;&#x52A8;&#x7684;&#xFF0C;m&#x8868;&#x793A;&#x5E73;&#x5747;&#x5230;&#x6BCF;&#x4E2A;&#x6837;&#x672C;&#x4E0A;&#x7684;&#x635F;&#x5931;&#x7A0B;&#x5EA6;&#xFF0C;&#x635F;&#x5931;&#x51FD;&#x6570;&#x4E5F;&#x4E0D;&#x4E00;&#x5B9A;&#x662F;&#x5DEE;&#x7684;&#x5E73;&#x65B9;&#xFF0C;&#x641E;&#x51FA;&#x5404;&#x79CD;&#x5404;&#x6837;&#x7684;&#x635F;&#x5931;&#x51FD;&#x6570;&#x662F;&#x6570;&#x5B66;&#x5BB6;&#x7684;&#x5DE5;&#x4F5C;&#x3002;</p>
 <p>&#x8FD9;&#x4E2A;&#x51FD;&#x6570;&#x7528;Python&#x8868;&#x793A;&#x4E3A;&#xFF1A;</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># &#x635F;&#x5931;&#x51FD;&#x6570;</span></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">computeCost</span><span class="params">(X, y, theta=[[<span class="number">0</span>], [<span class="number">0</span>]])</span>:</span></div><div class="line">    m = y.size</div><div class="line">    h = X.dot(theta)</div><div class="line">    J = <span class="number">1.0</span> / (<span class="number">2</span> * m) * (np.sum(np.square(h - y)))</div><div class="line">    <span class="keyword">return</span> J</div></pre></td></tr></table></figure>
@@ -377,10 +377,10 @@
 <figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div></pre></td><td class="code"><pre><div class="line"><span class="comment">#!/usr/bin/python</span></div><div class="line"><span class="comment">#coding=utf-8</span></div><div class="line"></div><div class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</div><div class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</div><div class="line"></div><div class="line"><span class="comment"># &#x635F;&#x5931;&#x51FD;&#x6570;</span></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">computeCost</span><span class="params">(X, y, theta=[[<span class="number">0</span>], [<span class="number">0</span>]])</span>:</span></div><div class="line">    m = y.size</div><div class="line">    h = X.dot(theta)</div><div class="line">    J = <span class="number">1.0</span> / (<span class="number">2</span> * m) * (np.sum(np.square(h - y)))</div><div class="line">    <span class="keyword">return</span> J</div><div class="line"></div><div class="line"><span class="comment"># &#x68AF;&#x5EA6;&#x4E0B;&#x964D;</span></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">gradientDescent</span><span class="params">(X, y, theta=[[<span class="number">0</span>], [<span class="number">0</span>]], alpha=<span class="number">0.01</span>, num_iters=<span class="number">10</span>)</span>:</span></div><div class="line">    m = y.size</div><div class="line">    J_history = np.zeros(num_iters)</div><div class="line">    <span class="keyword">for</span> iter <span class="keyword">in</span> np.arange(num_iters):</div><div class="line">        h = X.dot(theta)</div><div class="line">        theta = theta - alpha * (<span class="number">1.0</span> / m) * (X.T.dot(h - y))</div><div class="line">        J_history[iter] = computeCost(X, y, theta)</div><div class="line">    <span class="keyword">return</span> (theta, J_history)</div><div class="line">    </div><div class="line"><span class="comment"># &#x8BFB;&#x53D6;&#x6570;&#x636E;</span></div><div class="line">data = np.loadtxt(<span class="string">&apos;data.txt&apos;</span>, delimiter=<span class="string">&apos;,&apos;</span>)</div><div class="line">X = np.c_[np.ones(data.shape[<span class="number">0</span>]), data[:,<span class="number">0</span>]]</div><div class="line">y = np.c_[data[:,<span class="number">1</span>]]</div></pre></td></tr></table></figure>
 <p>&#x7136;&#x540E;&#x8C03;&#x7528;&#x68AF;&#x5EA6;&#x4E0B;&#x964D;&#x6CD5;&#xFF0C;&#x8FD9;&#x65F6;&#x53EF;&#x4EE5;&#x770B;&#x5230;&#x968F;&#x7740;&#x8FED;&#x4EE3;&#x6B21;&#x6570;&#x7684;&#x589E;&#x52A0;&#xFF0C;&#x635F;&#x5931;&#x51FD;&#x6570;&#x7684;&#x503C;&#x662F;&#x4E0D;&#x65AD;&#x51CF;&#x5C0F;&#x6536;&#x655B;&#x7684;&#xFF1A;</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">theta , Cost_J = gradientDescent(X, y, num_iters=<span class="number">10</span>)</div><div class="line">print(<span class="string">&apos;theta: &apos;</span>, theta.ravel())&#x3000;<span class="comment"># &#x5B66;&#x5F97;b=0.13840976&#xFF0C;k=0.96952551</span></div><div class="line">plt.plot(Cost_J)</div><div class="line">plt.ylabel(<span class="string">&apos;Cost J&apos;</span>)</div><div class="line">plt.xlabel(<span class="string">&apos;Itersations&apos;</span>)</div><div class="line">plt.show()</div></pre></td></tr></table></figure>
-<p><img src="/&#x673A;&#x5668;&#x5B66;&#x4E60;/&#x7EBF;&#x6027;&#x56DE;&#x5F52;/&#x635F;&#x5931;&#x51FD;&#x6570;&#x7684;&#x6536;&#x655B;.png" alt="logo"></p>
+<p><img src="/&#x673A;&#x5668;&#x5B66;&#x4E60;/&#x673A;&#x5668;&#x5B66;&#x4E60;&#x6982;&#x5FF5;&#x4E0E;&#x7EBF;&#x6027;&#x56DE;&#x5F52;/&#x635F;&#x5931;&#x51FD;&#x6570;&#x7684;&#x6536;&#x655B;.png" alt="logo"></p>
 <p>&#x8F93;&#x51FA;&#x539F;&#x59CB;&#x70B9;&#x548C;&#x5B66;&#x4E60;&#x7ED3;&#x679C;&#x66F2;&#x7EBF;&#xFF0C;&#x53EF;&#x4EE5;&#x5C1D;&#x8BD5;&#x4E0D;&#x65AD;&#x4ECE;&#x5C0F;&#x5230;&#x5927;&#x8C03;&#x6574;&#x8FED;&#x4EE3;&#x6B21;&#x6570;&#xFF0C;&#x4F1A;&#x53D1;&#x73B0;&#x8FD9;&#x6761;&#x76F4;&#x7EBF;&#x7684;&#x659C;&#x7387;&#x662F;&#x4E0D;&#x65AD;&#x4ECE;0&#x4E0A;&#x5347;&#x903C;&#x8FD1;&#x5230;&#x63A5;&#x8FD1;1&#x7684;&#xFF1A;</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">plt.xlim(<span class="number">0</span>, <span class="number">12</span>)</div><div class="line">plt.scatter(X[:,<span class="number">1</span>], y, s=<span class="number">30</span>, c=<span class="string">&apos;r&apos;</span>, marker=<span class="string">&apos;x&apos;</span>, linewidths=<span class="number">1</span>)</div><div class="line">xx = np.arange(<span class="number">0</span>,<span class="number">12</span>)</div><div class="line">yy = theta[<span class="number">0</span>] + theta[<span class="number">1</span>]*xx</div><div class="line">plt.plot(xx, yy)</div><div class="line">plt.show()</div></pre></td></tr></table></figure>
-<p><img src="/&#x673A;&#x5668;&#x5B66;&#x4E60;/&#x7EBF;&#x6027;&#x56DE;&#x5F52;/&#x5B66;&#x4E60;&#x7ED3;&#x679C;.png" alt="logo"></p>
+<p><img src="/&#x673A;&#x5668;&#x5B66;&#x4E60;/&#x673A;&#x5668;&#x5B66;&#x4E60;&#x6982;&#x5FF5;&#x4E0E;&#x7EBF;&#x6027;&#x56DE;&#x5F52;/&#x5B66;&#x4E60;&#x7ED3;&#x679C;.png" alt="logo"></p>
 <h2 id="sklearn&#x5E93;&#x5B9E;&#x73B0;"><a href="#sklearn&#x5E93;&#x5B9E;&#x73B0;" class="headerlink" title="sklearn&#x5E93;&#x5B9E;&#x73B0;"></a>sklearn&#x5E93;&#x5B9E;&#x73B0;</h2><p>sklearn&#x662F;python&#x7684;&#x673A;&#x5668;&#x5B66;&#x4E60;&#x7B97;&#x6CD5;&#x5305;&#xFF0C;&#x7528;&#x5B83;&#x5B9E;&#x73B0;&#x4E0A;&#x9762;&#x7684;&#x7B97;&#x6CD5;&#x5F97;&#x5230;&#x7684;&#x76F4;&#x7EBF;&#x548C;&#x6211;&#x4EEC;&#x81EA;&#x5DF1;&#x5199;&#x4EE3;&#x7801;&#x662F;&#x57FA;&#x672C;&#x543B;&#x5408;&#x7684;&#xFF1A;</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">from</span> sklearn.linear_model <span class="keyword">import</span> LinearRegression</div><div class="line"></div><div class="line">regr = LinearRegression()</div><div class="line">regr.fit(X[:,<span class="number">1</span>].reshape(<span class="number">-1</span>,<span class="number">1</span>), y.ravel())</div><div class="line">plt.plot(xx, regr.intercept_ + regr.coef_ * xx)</div></pre></td></tr></table></figure>
 
@@ -418,6 +418,10 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
+            
+              <a href="/机器学习/逻辑回归/" rel="prev" title="逻辑回归">
+                逻辑回归 <i class="fa fa-chevron-right"></i>
+              </a>
             
           </div>
         </div>
@@ -487,7 +491,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/">
-                <span class="site-state-item-count">3</span>
+                <span class="site-state-item-count">4</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -706,7 +710,7 @@
         }
       });
     </script>
-    <script type="text/javascript" src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=default"></script>
   
 
 
