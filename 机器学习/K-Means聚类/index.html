@@ -1,0 +1,682 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.0" />
+
+
+
+
+
+
+<meta name="description" content="聚类算法（非监督学习）和分类算法（监督学习）实现的需求不同，聚类解决的是对没有标签的数据经过学习来归类的问题。这里主要介绍K-Means聚类。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="K-Means聚类">
+<meta property="og:url" content="http://yoursite.com/机器学习/K-Means聚类/index.html">
+<meta property="og:site_name" content="Akali's Room">
+<meta property="og:description" content="聚类算法（非监督学习）和分类算法（监督学习）实现的需求不同，聚类解决的是对没有标签的数据经过学习来归类的问题。这里主要介绍K-Means聚类。">
+<meta property="og:updated_time" content="2017-04-15T04:01:41.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="K-Means聚类">
+<meta name="twitter:description" content="聚类算法（非监督学习）和分类算法（监督学习）实现的需求不同，聚类解决的是对没有标签的数据经过学习来归类的问题。这里主要介绍K-Means聚类。">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/机器学习/K-Means聚类/"/>
+
+
+
+
+
+  <title> K-Means聚类 | Akali's Room </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">Akali's Room</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+    
+      <p class="site-subtitle"></p>
+    
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-links">
+          <a href="/links" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
+            
+            友链
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+  <link itemprop="mainEntityOfPage" href="http://yoursite.com/机器学习/K-Means聚类/">
+
+  <span style="display:none" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <meta itemprop="name" content="アカリ">
+    <meta itemprop="description" content="">
+    <meta itemprop="image" content="/images/icon.jpeg">
+  </span>
+
+  <span style="display:none" itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+    <meta itemprop="name" content="Akali's Room">
+    <span style="display:none" itemprop="logo" itemscope itemtype="http://schema.org/ImageObject">
+      <img style="display:none;" itemprop="url image" alt="Akali's Room" src="">
+    </span>
+  </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                K-Means聚类
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-04-15T18:00:00+08:00">
+                2017-04-15
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/机器学习/" itemprop="url" rel="index">
+                    <span itemprop="name">机器学习</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+          
+
+          
+              <div class="post-description">
+                  聚类算法（非监督学习）和分类算法（监督学习）实现的需求不同，聚类解决的是对没有标签的数据经过学习来归类的问题。这里主要介绍K-Means聚类。
+              </div>
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>&#x5728;&#x505A;&#x805A;&#x7C7B;&#x7684;&#x65F6;&#x5019;&#xFF0C;&#x8981;&#x770B;&#x4E24;&#x4E2A;&#x70B9;&#x7684;&#x8DDD;&#x79BB;&#x662F;&#x4E0D;&#x662F;&#x76F8;&#x8FD1;&#x6216;&#x8005;&#x76F8;&#x4F3C;&#x5EA6;&#x9AD8;&#x624D;&#x6709;&#x7406;&#x7531;&#x5206;&#x4E3A;&#x4E00;&#x7C7B;&#xFF0C;&#x63CF;&#x8FF0;&#x4E24;&#x4E2A;&#x70B9;&#x7684;&#x8DDD;&#x79BB;&#x6709;&#x5F88;&#x591A;&#x79CD;&#x65B9;&#x5F0F;&#xFF0C;&#x5982;&#x6B27;&#x6C0F;&#x8DDD;&#x79BB;&#x3001;&#x66FC;&#x54C8;&#x987F;&#x8DDD;&#x79BB;&#x3001;&#x5207;&#x6BD4;&#x96EA;&#x592B;&#x8DDD;&#x79BB;&#x3001;&#x4F59;&#x5F26;&#x8DDD;&#x79BB;&#x3001;Jaccard&#x76F8;&#x4F3C;&#x7CFB;&#x6570;&#x3001;&#x76F8;&#x5173;&#x7CFB;&#x6570;&#x7B49;&#x3002;</p>
+<p>&#x5BF9;&#x4E8E;&#x4E24;&#x4E2A;&#x7C7B;&#x522B;&#x4E4B;&#x95F4;&#x4E5F;&#x6709;&#x4E00;&#x4E9B;&#x65B9;&#x5F0F;&#x8861;&#x91CF;&#x8DDD;&#x79BB;&#xFF0C;&#x6BD4;&#x5982;&#x5355;&#x8FDE;&#x63A5;&#x805A;&#x7C7B;&#xFF08;&#x4E24;&#x4E2A;&#x7C7B;&#x4E2D;&#x6700;&#x8FD1;&#x4E24;&#x70B9;&#x8DDD;&#x79BB;&#xFF09;&#xFF0C;&#x5168;&#x8FDE;&#x63A5;&#x8DDD;&#x79BB;&#xFF08;&#x4E24;&#x4E2A;&#x7C7B;&#x4E2D;&#x6700;&#x8FDC;&#x4E24;&#x70B9;&#x8DDD;&#x79BB;&#xFF09;&#xFF0C;&#x5E73;&#x5747;&#x8FDE;&#x63A5;&#x805A;&#x7C7B;&#xFF08;&#x4E24;&#x4E2A;&#x7C7B;&#x4E2D;&#x7684;&#x70B9;&#x4E24;&#x4E24;&#x8DDD;&#x79BB;&#x6C42;&#x5E73;&#x5747;&#xFF0C;&#x6700;&#x5E38;&#x7528;&#xFF09;</p>
+<p>&#x805A;&#x7C7B;&#x7B97;&#x6CD5;&#x5E38;&#x7528;&#x7684;&#x6709;&#x4E24;&#x7C7B;&#xFF0C;&#x5206;&#x4E3A;&#x5C42;&#x6B21;&#x805A;&#x7C7B;&#xFF08;&#x81EA;&#x5E95;&#x5411;&#x4E0A;/&#x81EA;&#x9876;&#x4E61;&#x4E0B;&#xFF09;&#x548C;&#x5212;&#x5206;&#x805A;&#x7C7B;&#xFF08;K-means&#x7B49;&#xFF09;&#xFF0C;&#x6B64;&#x5916;&#x8FD8;&#x6709;&#x8C31;&#x805A;&#x7C7B;&#x3001;&#x5BC6;&#x5EA6;&#x805A;&#x7C7B;&#x7B49;&#x65B9;&#x5F0F;&#xFF0C;&#x591A;&#x7528;&#x4E8E;&#x793E;&#x4EA4;&#x7F51;&#x7EDC;&#x5206;&#x6790;&#x3002;</p>
+<h2 id="K-Means&#x7B97;&#x6CD5;"><a href="#K-Means&#x7B97;&#x6CD5;" class="headerlink" title="K-Means&#x7B97;&#x6CD5;"></a>K-Means&#x7B97;&#x6CD5;</h2><p>K-Means&#x7B97;&#x6CD5;&#x662F;&#x6700;&#x5E38;&#x7528;&#x6700;&#x7B80;&#x5355;&#x7684;&#x7B97;&#x6CD5;&#xFF0C;&#x4F46;&#x662F;&#x8FD9;&#x4E2A;&#x7B97;&#x6CD5;&#x9700;&#x8981;&#x9884;&#x5148;&#x77E5;&#x9053;&#x6574;&#x4E2A;&#x6570;&#x636E;&#x96C6;&#x5F53;&#x4E2D;&#x6709;&#x51E0;&#x4E2A;&#x7C7B;&#x522B;&#xFF0C;&#x5B83;&#x7684;&#x8FC7;&#x7A0B;&#x662F;&#xFF0C;&#x4EFB;&#x610F;&#x9009;&#x62E9;K&#x4E2A;&#x70B9;&#x4F5C;&#x4E3A;&#x521D;&#x59CB;&#x8FED;&#x4EE3;&#x4E2D;&#x5FC3;&#xFF0C;&#x8BA1;&#x7B97;&#x6BCF;&#x4E2A;&#x6837;&#x672C;&#x70B9;&#x5230;&#x4E2D;&#x5FC3;&#x7684;&#x8DDD;&#x79BB;&#xFF0C;&#x5C06;&#x6BCF;&#x4E2A;&#x6837;&#x672C;&#x70B9;&#x5212;&#x5206;&#x5230;&#x8DDD;&#x79BB;&#x8BE5;&#x70B9;&#x6700;&#x8FD1;&#x7684;&#x805A;&#x7C7B;&#x5F53;&#x4E2D;&#x53BB;&#xFF0C;&#x4E4B;&#x540E;&#xFF0C;&#x8BA1;&#x7B97;&#x6BCF;&#x4E2A;&#x805A;&#x7C7B;&#x7684;&#x8D28;&#x5FC3;&#xFF0C;&#x5C06;&#x5176;&#x4F5C;&#x4E3A;&#x65B0;&#x7684;&#x8FED;&#x4EE3;&#x4E2D;&#x5FC3;&#xFF0C;&#x53CD;&#x590D;&#x6267;&#x884C;&#x8FD9;&#x4E2A;&#x8FC7;&#x7A0B;&#xFF0C;&#x76F4;&#x5230;&#x4E2D;&#x5FC3;&#x79FB;&#x52A8;&#x8DDD;&#x79BB;&#x5C0F;&#x4E8E;&#x67D0;&#x4E2A;&#x9608;&#x503C;&#x6216;&#x8FBE;&#x5230;&#x4E00;&#x5B9A;&#x8FED;&#x4EE3;&#x6B21;&#x6570;&#x4E3A;&#x6B62;&#x3002;&#x5728;&#x8FD9;&#x4E2A;&#x7B97;&#x6CD5;&#x4E2D;&#x901A;&#x5E38;&#x4F7F;&#x7528;&#x6B27;&#x6C0F;&#x8DDD;&#x79BB;&#x8BA1;&#x7B97;&#x3002;</p>
+<p>&#x5728;&#x6BCF;&#x4E00;&#x6B21;&#x9009;&#x597D;&#x65B0;&#x7684;&#x4E2D;&#x5FC3;&#x540E;&#xFF0C;&#x5C31;&#x8981;&#x8BA1;&#x7B97;&#x4E00;&#x4E0B;&#x5F53;&#x524D;&#x9009;&#x597D;&#x7684;&#x4E2D;&#x5FC3;&#x70B9;&#x7684;&#x635F;&#x5931;&#x4E3A;&#x591A;&#x5C11;&#xFF0C;&#x5B9A;&#x4E49;&#x4E00;&#x4E2A;&#x635F;&#x5931;&#x51FD;&#x6570;&#xFF0C;&#x663E;&#x7136;&#xFF0C;&#x968F;&#x7740;&#x8FED;&#x4EE3;&#x7684;&#x8FDB;&#x884C;&#xFF0C;&#x635F;&#x5931;&#x662F;&#x4E0D;&#x65AD;&#x53D8;&#x5C0F;&#x7684;&#xFF0C;&#x8BA1;&#x7B97;&#x516C;&#x5F0F;&#x79F0;&#x4E3A;WCSS&#xFF1A;</p>
+<p>$ L(C) = \sum_{k&#x2208;K}\sum_{i&#x2208;K}||x{_i}-c{_i}||^2 $</p>
+<p>&#x8FD9;&#x4E2A;&#x516C;&#x5F0F;&#x9488;&#x5BF9;&#x6BCF;&#x4E00;&#x4E2A;&#x8D28;&#x5FC3;&#xFF0C;&#x6C42;&#x6240;&#x6709;&#x70B9;&#x5230;&#x8D28;&#x5FC3;&#x7684;&#x8DDD;&#x79BB;&#x7684;&#x5E73;&#x65B9;&#xFF0C;&#x7136;&#x540E;&#x6C42;&#x548C;&#x3002;</p>
+<p>&#x4F46;&#x662F;&#x8FD9;&#x4E2A;&#x7B97;&#x6CD5;&#x7684;&#x5374;&#x663E;&#x793A;&#xFF0C;K&#x9700;&#x8981;&#x9884;&#x5148;&#x7ED9;&#x5B9A;&#xFF0C;&#x6216;&#x8005;&#x9700;&#x8981;&#x5C1D;&#x8BD5;&#x627E;&#x5230;&#x635F;&#x5931;&#x51FD;&#x6570;&#x6700;&#x5C0F;&#x7684;K&#x503C;&#xFF0C;&#x53E6;&#x5916;&#x8FD9;&#x4E2A;&#x7B97;&#x6CD5;&#x5BF9;&#x521D;&#x59CB;&#x70B9;&#x5F88;&#x654F;&#x611F;&#xFF0C;&#x4E0D;&#x540C;&#x7684;&#x521D;&#x59CB;&#x70B9;&#x4F1A;&#x5F97;&#x5230;&#x4E0D;&#x540C;&#x7684;&#x805A;&#x7C7B;&#x7ED3;&#x679C;&#x3002;</p>
+<h2 id="K-Means-&#x7B97;&#x6CD5;"><a href="#K-Means-&#x7B97;&#x6CD5;" class="headerlink" title="K-Means++&#x7B97;&#x6CD5;"></a>K-Means++&#x7B97;&#x6CD5;</h2><p>&#x8FD9;&#x662F;&#x4E00;&#x79CD;&#x5BF9;K-Means&#x7684;&#x4F18;&#x5316;&#x7B97;&#x6CD5;&#xFF0C;&#x76F8;&#x5F53;&#x4E8E;&#x5728;K-Means&#x4E4B;&#x524D;&#x5148;&#x901A;&#x8FC7;&#x7B97;&#x6CD5;&#x9009;&#x51FA;&#x4E00;&#x4E9B;&#x5408;&#x9002;&#x7684;&#x805A;&#x7C7B;&#x4E2D;&#x5FC3;&#xFF0C;&#x518D;&#x6765;&#x8DD1;K-Means&#x7B97;&#x6CD5;&#x3002;</p>
+<p>&#x5047;&#x8BBE;&#x73B0;&#x5728;&#x5DF2;&#x7ECF;&#x9009;&#x597D;&#x4E86;&#x4E24;&#x4E2A;&#x805A;&#x7C7B;&#x4E2D;&#x5FC3;&#xFF0C;&#x90A3;&#x4E48;&#x4E0B;&#x4E00;&#x6B65;&#xFF0C;&#x5C31;&#x8981;&#x4ECE;N-2&#x4E2A;&#x70B9;&#x91CC;&#x9009;&#x51FA;&#x4E00;&#x4E2A;&#x6700;&#x5408;&#x9002;&#x7684;&#x805A;&#x7C7B;&#x4E2D;&#x5FC3;&#xFF0C;&#x8FD9;&#x65F6;&#xFF0C;&#x53EF;&#x4EE5;&#x8BA1;&#x7B97;&#x51FA;N-2&#x4E2A;&#x70B9;&#x91CC;&#x6BCF;&#x4E00;&#x4E2A;&#x70B9;&#x5230;&#x4E24;&#x4E2A;&#x805A;&#x7C7B;&#x4E2D;&#x5FC3;&#x7684;&#x8DDD;&#x79BB;&#xFF0C;&#x5BF9;&#x6BCF;&#x4E2A;&#x70B9;&#xFF0C;&#x53D6;&#x8F83;&#x5927;&#x7684;&#x8DDD;&#x79BB;&#xFF0C;&#x8FD9;&#x6837;&#x5C31;&#x5F97;&#x5230;&#x4E86;N-2&#x4E2A;&#x8DDD;&#x79BB;&#x503C;&#xFF0C;&#x628A;&#x8FD9;&#x4E9B;&#x8DDD;&#x79BB;&#x503C;&#x76F8;&#x6BD4;&#x4E8E;&#x4ED6;&#x4EEC;&#x7684;&#x548C;&#xFF0C;&#x6298;&#x7B97;&#x6210;&#x6743;&#x91CD;&#xFF0C;&#x7136;&#x540E;&#x968F;&#x673A;&#x591A;&#x6B21;&#xFF0C;&#x8FD9;&#x6837;&#x663E;&#x7136;&#x843D;&#x5230;&#x8DDD;&#x79BB;&#x6700;&#x8FDC;&#xFF08;&#x6743;&#x91CD;&#x6700;&#x5927;&#xFF09;&#x7684;&#x70B9;&#x7684;&#x6982;&#x7387;&#x5C31;&#x6700;&#x5927;&#xFF0C;&#x6B21;&#x6570;&#x5C31;&#x8D8A;&#x591A;&#xFF0C;&#x9009;&#x62E9;&#x968F;&#x673A;&#x547D;&#x4E2D;&#x6B21;&#x6570;&#x6700;&#x591A;&#x7684;&#x70B9;&#x4F5C;&#x4E3A;&#x65B0;&#x7684;&#x8FED;&#x4EE3;&#x4E2D;&#x5FC3;&#x3002;&#x8FD9;&#x6837;&#x51E0;&#x8F6E;&#x4E0B;&#x53BB;&#xFF0C;&#x5C31;&#x80FD;&#x627E;&#x5230;K&#x7684;&#x8D28;&#x5FC3;&#xFF0C;&#x7136;&#x540E;&#x518D;&#x8DD1;K-Means&#x7B97;&#x6CD5;&#x3002;</p>
+<h2 id="Mini-Batch-K-Means"><a href="#Mini-Batch-K-Means" class="headerlink" title="Mini Batch K-Means"></a>Mini Batch K-Means</h2><p>&#x5982;&#x679C;&#x6570;&#x636E;&#x70B9;&#x5F88;&#x591A;&#x6BD4;&#x5982;&#x8D85;&#x8FC7;&#x4E00;&#x4E07;&#x4E2A;&#xFF0C;&#x6027;&#x80FD;&#x5C31;&#x4F1A;&#x4E0B;&#x964D;&#xFF0C;&#x56E0;&#x4E3A;&#x6211;&#x8981;&#x904D;&#x5386;&#x6240;&#x6709;&#x70B9;&#x8BA1;&#x7B97;&#x8DDD;&#x79BB;&#xFF0C;&#x800C;Mini Batch&#x662F;&#x4E00;&#x79CD;&#x62BD;&#x6837;&#x65B9;&#x6CD5;&#x8DD1;K-Means&#xFF0C;&#x8FD9;&#x4F1A;&#x5927;&#x5E45;&#x63D0;&#x5347;&#x8FD0;&#x884C;&#x6548;&#x7387;&#xFF0C;&#x4F46;&#x662F;&#x5728;&#x6570;&#x636E;&#x91CF;&#x5F88;&#x5927;&#x7684;&#x60C5;&#x51B5;&#x4E0B;&#xFF0C;&#x51C6;&#x786E;&#x5EA6;&#x4E0B;&#x964D;&#x5E76;&#x4E0D;&#x660E;&#x663E;&#xFF0C;&#x6709;&#x5DEE;&#x5F02;&#x7684;&#x57FA;&#x672C;&#x90FD;&#x662F;&#x805A;&#x7C7B;&#x8FB9;&#x754C;&#x4E0A;&#x7684;&#x70B9;&#x3002;</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+
+    <footer class="post-footer">
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/机器学习/Scikit-Learn编程方法/" rel="next" title="Scikit-Learn编程方法">
+                <i class="fa fa-chevron-left"></i> Scikit-Learn编程方法
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/icon.jpeg"
+               alt="アカリ" />
+          <p class="site-author-name" itemprop="name">アカリ</p>
+          <p class="site-description motion-element" itemprop="description">很羡慕工作后辞职读研的人，能腾出一两年的大片时间来专心学习某个自己喜欢的领域的知识技能其实是一件非常幸福的事……</p>
+        </div>
+        <nav class="site-state motion-element">
+        
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/">
+                <span class="site-state-item-count">9</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">3</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#K-Means算法"><span class="nav-number">1.</span> <span class="nav-text">K-Means算法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#K-Means-算法"><span class="nav-number">2.</span> <span class="nav-text">K-Means++算法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Mini-Batch-K-Means"><span class="nav-number">3.</span> <span class="nav-text">Mini Batch K-Means</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">アカリ</span>
+</div>
+
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.0"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.0"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=default"></script>
+  
+
+
+  
+
+  
+
+  
+
+
+</body>
+</html>
