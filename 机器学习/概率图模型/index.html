@@ -1,0 +1,747 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.0" />
+
+
+
+
+
+
+<meta name="description" content="在1995年到2012年之间，机器学习是以SVM为代表的统计学习时代；而在2002到2012年之间则是概率图模型的时代，基于概率图模型，又有著名的朴素贝叶斯和隐马尔可夫模型；之后又进入了深度学习时代。另外还有“图模型加圈，神经网加层，优化目标加正则”这种名诗。这篇文章从贝叶斯定理开始，总结概率图模型和相关的算法。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="概率图模型">
+<meta property="og:url" content="http://yoursite.com/机器学习/概率图模型/index.html">
+<meta property="og:site_name" content="Akali's Room">
+<meta property="og:description" content="在1995年到2012年之间，机器学习是以SVM为代表的统计学习时代；而在2002到2012年之间则是概率图模型的时代，基于概率图模型，又有著名的朴素贝叶斯和隐马尔可夫模型；之后又进入了深度学习时代。另外还有“图模型加圈，神经网加层，优化目标加正则”这种名诗。这篇文章从贝叶斯定理开始，总结概率图模型和相关的算法。">
+<meta property="og:image" content="http://yoursite.com/机器学习/概率图模型/报警模型.png">
+<meta property="og:updated_time" content="2017-04-24T08:55:36.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="概率图模型">
+<meta name="twitter:description" content="在1995年到2012年之间，机器学习是以SVM为代表的统计学习时代；而在2002到2012年之间则是概率图模型的时代，基于概率图模型，又有著名的朴素贝叶斯和隐马尔可夫模型；之后又进入了深度学习时代。另外还有“图模型加圈，神经网加层，优化目标加正则”这种名诗。这篇文章从贝叶斯定理开始，总结概率图模型和相关的算法。">
+<meta name="twitter:image" content="http://yoursite.com/机器学习/概率图模型/报警模型.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/机器学习/概率图模型/"/>
+
+
+
+
+
+  <title> 概率图模型 | Akali's Room </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">Akali's Room</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+    
+      <p class="site-subtitle"></p>
+    
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-links">
+          <a href="/links" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
+            
+            友链
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+  <link itemprop="mainEntityOfPage" href="http://yoursite.com/机器学习/概率图模型/">
+
+  <span style="display:none" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <meta itemprop="name" content="アカリ">
+    <meta itemprop="description" content="">
+    <meta itemprop="image" content="/images/icon.jpeg">
+  </span>
+
+  <span style="display:none" itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+    <meta itemprop="name" content="Akali's Room">
+    <span style="display:none" itemprop="logo" itemscope itemtype="http://schema.org/ImageObject">
+      <img style="display:none;" itemprop="url image" alt="Akali's Room" src="">
+    </span>
+  </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                概率图模型
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-04-22T18:00:00+08:00">
+                2017-04-22
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/机器学习/" itemprop="url" rel="index">
+                    <span itemprop="name">机器学习</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+          
+
+          
+              <div class="post-description">
+                  在1995年到2012年之间，机器学习是以SVM为代表的统计学习时代；而在2002到2012年之间则是概率图模型的时代，基于概率图模型，又有著名的朴素贝叶斯和隐马尔可夫模型；之后又进入了深度学习时代。另外还有“图模型加圈，神经网加层，优化目标加正则”这种名诗。这篇文章从贝叶斯定理开始，总结概率图模型和相关的算法。
+              </div>
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="&#x95EE;&#x9898;&#x63D0;&#x51FA;"><a href="#&#x95EE;&#x9898;&#x63D0;&#x51FA;" class="headerlink" title="&#x95EE;&#x9898;&#x63D0;&#x51FA;"></a>&#x95EE;&#x9898;&#x63D0;&#x51FA;</h2><p>&#x9996;&#x5148;&#x770B;&#x51E0;&#x4E2A;&#x7ECF;&#x5178;&#x7684;&#x95EE;&#x9898;&#xFF1A;</p>
+<p>1.&#x5F53;&#x4F60;&#x53BB;&#x505A;&#x4F53;&#x68C0;&#xFF0C;&#x533B;&#x751F;&#x8BF4;&#xFF0C;&#x6211;&#x4EEC;&#x7684;&#x8BBE;&#x5907;&#x8BA4;&#x4E3A;&#x4F60;&#x6709;99%&#x7684;&#x6982;&#x7387;&#x5F97;&#x4E86;&#x8FD9;&#x4E2A;&#x75C5;&#xFF0C;&#x800C;&#x8FD9;&#x4E2A;&#x75C5;&#x7684;&#x771F;&#x5B9E;&#x53D1;&#x75C5;&#x7387;&#x662F;1/10000&#xFF0C;&#x90A3;&#x4E48;&#xFF0C;&#x4F60;&#x8BA4;&#x4E3A;&#x4F60;&#x5F97;&#x8FD9;&#x4E2A;&#x75C5;&#x7684;&#x6982;&#x7387;&#x662F;&#x591A;&#x5C11;&#xFF1F;<br>2.&#x8457;&#x540D;&#x7684;Monty Hall&#x95EE;&#x9898;&#xFF0C;&#x5728;&#x4E00;&#x573A;&#x6E38;&#x620F;&#x4E2D;&#xFF0C;&#x6709;&#x4E09;&#x9053;&#x95E8;&#xFF0C;&#x6709;&#x4E14;&#x53EA;&#x6709;&#x4E00;&#x9053;&#x95E8;&#x540E;&#x6709;&#x5927;&#x5956;&#xFF0C;&#x4F60;&#x8981;&#x968F;&#x673A;&#x9009;&#x4E00;&#x4E2A;&#x95E8;&#xFF0C;&#x4E3B;&#x6301;&#x4EBA;&#x4F1A;&#x4ECE;&#x53E6;&#x5916;&#x4E24;&#x9053;&#x95E8;&#x4E2D;&#x4EFB;&#x610F;&#x9009;&#x4E00;&#x4E2A;&#x6CA1;&#x4E2D;&#x5956;&#x7684;&#x95E8;&#x6253;&#x5F00;&#x7ED9;&#x4F60;&#x770B;&#xFF0C;&#x4E4B;&#x540E;&#x4F60;&#x6709;&#x4E00;&#x6B21;&#x673A;&#x4F1A;&#x9009;&#x62E9;&#x53E6;&#x4E00;&#x6247;&#x95E8;&#xFF0C;&#x90A3;&#x4E48;&#x4ECE;&#x6570;&#x5B66;&#x4E0A;&#x8BB2;&#xFF0C;&#x4F60;&#x6362;&#x4E0D;&#x6362;&#x95E8;&#xFF1F;&#xFF08;&#x5F53;&#x7136;&#xFF0C;&#x53EF;&#x4EE5;&#x7528;&#x8499;&#x7279;&#x5361;&#x7F57;&#x6A21;&#x62DF;&#xFF0C;&#x7528;&#x7A0B;&#x5E8F;&#x968F;&#x673A;&#x73A9;&#x4E00;&#x767E;&#x4E07;&#x6B21;&#x770B;&#x7ED3;&#x679C;&#xFF0C;&#x4E5F;&#x53EF;&#x4EE5;&#x6392;&#x5217;&#x7EC4;&#x5408;&#x5217;&#x51FA;&#x6240;&#x6709;&#x60C5;&#x51B5;&#xFF0C;&#x4F46;&#x662F;&#x8981;&#x6C42;&#x7528;&#x7B97;&#x7684;&#xFF09;</p>
+<h2 id="&#x8D1D;&#x53F6;&#x65AF;&#x516C;&#x5F0F;"><a href="#&#x8D1D;&#x53F6;&#x65AF;&#x516C;&#x5F0F;" class="headerlink" title="&#x8D1D;&#x53F6;&#x65AF;&#x516C;&#x5F0F;"></a>&#x8D1D;&#x53F6;&#x65AF;&#x516C;&#x5F0F;</h2><p>&#x4E3A;&#x4E86;&#x89E3;&#x51B3;&#x8FD9;&#x4E2A;&#x95EE;&#x9898;&#x9700;&#x8981;&#x6761;&#x4EF6;&#x6982;&#x7387;&#x516C;&#x5F0F;&#xFF1A;</p>
+<p>$ P(A|B) = \frac{P(AB)}{P(B)} $</p>
+<p>&#x7ECF;&#x8FC7;&#x7B80;&#x5355;&#x63A8;&#x5BFC;&#x5F97;&#x5230;&#x4E58;&#x6CD5;&#x5F62;&#x5F0F;&#xFF1A;</p>
+<p>$ P(AB) = P(B|A)P(A) = P(A|B)P(B) $</p>
+<p>&#x5BF9;&#x53F3;&#x8FB9;&#x4E24;&#x9879;&#x53D8;&#x5F62;&#xFF0C;&#x6709;&#xFF1A;</p>
+<p>$ P(A|B) = \frac{P(B|A)P(A)}{P(B)} $</p>
+<p>&#x518D;&#x770B;&#x5DE6;&#x8FB9;&#x4E24;&#x9879;&#xFF0C;&#x56E0;&#x4E3A; $ P(AB) = P(B|A)P(A) $ &#xFF0C;&#x90A3;&#x4E48;&#x5982;&#x679C;&#x60F3;&#x6C42; $ P(B) $ &#xFF0C;&#x5B9E;&#x8D28;&#x4E0A;&#x5C31;&#x662F;&#x628A;&#x8054;&#x5408;&#x5206;&#x5E03;&#x4E2D; $ P(A) $ &#x6D88;&#x6389;&#xFF0C;&#x90A3;&#x4E48;&#x5C31;&#x9700;&#x8981;&#x628A;A&#x7684;&#x6240;&#x6709;&#x60C5;&#x51B5;&#x679A;&#x4E3E;&#x6C42;&#x548C;&#xFF0C;&#x8FD9;&#x7B49;&#x540C;&#x4E8E;&#x4E8C;&#x5143;&#x51FD;&#x6570;&#x5BF9;&#x5176;&#x4E2D;&#x4E00;&#x5143;&#x505A;&#x79EF;&#x5206;&#x6765;&#x6D88;&#x6389;&#xFF0C;&#x4E5F;&#x5C31;&#x662F;&#x5168;&#x6982;&#x7387;&#x516C;&#x5F0F;&#xFF1A;</p>
+<p>$ P(B) = \sum{_A} P(A)P(B|A) $</p>
+<p>&#x90A3;&#x4E48;&#x6211;&#x4EEC;&#x5C31;&#x53EF;&#x4EE5;&#x628A;&#x5168;&#x6982;&#x7387;&#x516C;&#x5F0F;&#x5957;&#x5230;&#x4E0A;&#x9762;&#x7684;&#x5206;&#x6BCD;&#x91CC;&#xFF0C;&#x5C31;&#x6709;&#x4E86;<strong>&#x8D1D;&#x53F6;&#x65AF;&#x516C;&#x5F0F;</strong>&#xFF1A;</p>
+<p>$ P(A|B) = \frac{P(B|A)P(A)}{\sum{_A} P(A)P(B|A)} $</p>
+<p>&#x4E8E;&#x662F;&#xFF0C;&#x5F53;&#x6211;&#x4EEC;&#x77E5;&#x9053;&#x4E86;&#x8054;&#x5408;&#x5206;&#x5E03;&#x4E4B;&#x540E;&#xFF0C;&#x5C31;&#x80FD;&#x62FF;&#x5230;&#x4EFB;&#x610F;&#x7684;&#x6982;&#x7387;&#x5206;&#x5E03;&#x548C;&#x6761;&#x4EF6;&#x6982;&#x7387;&#x4E86;&#xFF01;&#x8FD9;&#x5C31;&#x662F;&#x6982;&#x7387;&#x56FE;&#x6A21;&#x578B;&#x7684;&#x7EC8;&#x6781;&#x76EE;&#x6807;&#x3002;</p>
+<h2 id="&#x89E3;&#x9898;"><a href="#&#x89E3;&#x9898;" class="headerlink" title="&#x89E3;&#x9898;"></a>&#x89E3;&#x9898;</h2><p><strong>&#x95EE;&#x9898;1</strong>&#xFF0C;&#x5047;&#x8BBE;D&#x8868;&#x793A;&#x5F97;&#x4E86;&#x8FD9;&#x4E2A;&#x75C5;&#xFF0C;T&#x8868;&#x793A;&#x9A8C;&#x51FA;&#x6765;&#x4E86;&#xFF0C;&#x90A3;&#x4E48;</p>
+<p>$ P(T=1|D=1) = 0.99 $ </p>
+<p>&#x4E14;&#x6CA1;&#x5F97;&#x75C5;&#x4E5F;&#x6CA1;&#x88AB;&#x68C0;&#x9A8C;&#x51FA;&#x6765;&#x7684;&#x6982;&#x7387;&#x4E5F;&#x662F;99%&#xFF0C;</p>
+<p>$ P(T=0|D=0) = 0.99 $</p>
+<p>&#x800C;&#x53C8;&#x77E5;&#x9053;&#x4E00;&#x4E2A;&#x5148;&#x9A8C;&#x6982;&#x7387;</p>
+<p>$ P(D=1) = 0.0001 $</p>
+<p>&#x73B0;&#x5728;&#x8981;&#x6C42;&#x7684;&#x662F;&#x88AB;&#x68C0;&#x9A8C;&#x51FA;&#x6765;&#x4E14;&#x5F97;&#x4E86;&#x8FD9;&#x4E2A;&#x75C5;&#x7684;&#x6982;&#x7387; $ $ P(D=1|T=1) $&#xFF0C;&#x5957;&#x7528;&#x8D1D;&#x53F6;&#x65AF;&#x516C;&#x5F0F;&#xFF1A;</p>
+<p>$ P(D=1|T=1) = \frac{P(T=1|D=1)P(D=1)}{P(T=1|D=0)P(D-0)+P(T=1|D=1)P(D=1)} = 0.0098 $</p>
+<p>&#x4E5F;&#x5C31;&#x662F;&#x8BF4;&#xFF0C;&#x533B;&#x751F;&#x544A;&#x8BC9;&#x4F60;&#x6709;&#x75C5;&#xFF0C;&#x4F60;&#x53EA;&#x6709;0.98%&#x7684;&#x6982;&#x7387;&#x771F;&#x5F97;&#x75C5;&#x3002;</p>
+<p>&#x81F3;&#x4E8E;&#x9700;&#x4E0D;&#x9700;&#x8981;&#x62C5;&#x5FC3;&#x6216;&#x8005;&#x6CBB;&#x7597;&#xFF0C;&#x5219;&#x8981;&#x901A;&#x8FC7;&#x635F;&#x5931;&#x56DE;&#x62A5;&#x6A21;&#x578B;&#x548C;&#x8FD9;&#x4E2A;&#x6982;&#x7387;&#x6C42;&#x671F;&#x671B;&#xFF0C;&#x6765;&#x505A;&#x884C;&#x4E3A;&#x51B3;&#x7B56;&#x3002;</p>
+<p><strong>&#x95EE;&#x9898;2</strong>&#xFF0C;&#x5047;&#x8BBE;&#x6BCF;&#x6247;&#x95E8;&#x7684;&#x5148;&#x9A8C;&#x4E2D;&#x5956;&#x6982;&#x7387;&#x90FD;&#x662F;&#x5747;&#x7B49;&#x7684;&#xFF1A;</p>
+<p>$ P(H=1)=P(H=2)=P(H=3)=1/3 $</p>
+<p>&#x5047;&#x8BBE;&#x6211;&#x4EEC;&#x9009;&#x4E86;1&#x53F7;&#x95E8;&#xFF0C;&#x90A3;&#x4E48;&#x4E3B;&#x6301;&#x4EBA;&#x4F1A;&#x5728;2&#x548C;3&#x4E4B;&#x95F4;&#x6311;&#x4E00;&#x4E2A;&#xFF0C;&#x5047;&#x8BBE;&#x6709;&#x5956;&#x7684;&#x95E8;&#x662F;H&#xFF0C;&#x88AB;&#x5F00;&#x7684;&#x95E8;&#x662F;D&#xFF0C;&#x6709;&#x4E3B;&#x6301;&#x4EBA;&#x5F00;&#x4EEC;&#x5C71;&#x95E8;&#x7684;&#x6240;&#x6709;&#x6982;&#x7387;&#xFF1A;</p>
+<p>$ P(D=2|H=1)=1/2, P(D=3|H=1)=1/2 $<br>$ P(D=2|H=2)=0, P(D=3|H=2)=1 $<br>$ P(D=2|H=3)=1, P(D=3|H=3)=0 $</p>
+<p>&#x505A;&#x5B8C;&#x4E86;&#x8FD9;&#x4E24;&#x90E8;&#x7FFB;&#x8BD1;&#xFF0C;&#x5C31;&#x8981;&#x89E3;&#x51B3;&#x8981;&#x4E0D;&#x8981;&#x6362;&#x7684;&#x95EE;&#x9898;&#x4E86;&#xFF0C;&#x6839;&#x636E;&#x8D1D;&#x53F6;&#x65AF;&#x516C;&#x5F0F;&#xFF0C;&#x80FD;&#x7B97;&#x51FA;&#x5047;&#x8BBE;&#x4E3B;&#x6301;&#x4EBA;&#x5F00;&#x4E86;3&#x53F7;&#x95E8;D&#x540E;&#xFF0C;&#x5927;&#x5956;&#x5728;&#x6BCF;&#x6247;&#x95E8;H&#x540E;&#x7684;&#x6982;&#x7387;&#xFF1A;</p>
+<p>$ P(H=1|D=3) = 1/3 $ &#xFF0C;$ P(H=2|D=3) = 2/3 $ &#xFF0C;$ P(H=3|D=3) = 0 $</p>
+<p>&#x4E5F;&#x5C31;&#x662F;&#x8BF4;&#xFF0C;&#x5982;&#x679C;&#x4E0D;&#x6362;&#xFF0C;&#x8D62;&#x7684;&#x6982;&#x7387;&#x662F;33%&#xFF0C;&#x6362;&#x7684;&#x8BDD;&#x662F;66%&#xFF0C;&#x6240;&#x4EE5;&#x7B54;&#x6848;&#x5C31;&#x662F;&#x6362;&#x3002;</p>
+<p>&#x76F4;&#x89C2;&#x4E0A;&#x89E3;&#x91CA;&#xFF0C;&#x4E3B;&#x6301;&#x4EBA;&#x5F00;&#x7684;&#x95E8;&#x7684;&#x5224;&#x65AD;&#x662F;&#x57FA;&#x4E8E;&#x53C2;&#x4E0E;&#x8005;&#x5224;&#x65AD;&#x7684;&#xFF0C;&#x4E5F;&#x5C31;&#x662F;&#x4E3A;&#x53C2;&#x4E0E;&#x8005;&#x589E;&#x52A0;&#x4E86;&#x540E;&#x9A8C;&#x7684;&#x77E5;&#x8BC6;&#xFF0C;&#x662F;&#x6709;&#x52A9;&#x4E8E;&#x53C2;&#x4E0E;&#x8005;&#x4E0B;&#x4E00;&#x6B65;&#x5224;&#x65AD;&#x3002;</p>
+<h2 id="&#x6982;&#x7387;&#x56FE;&#x6A21;&#x578B;"><a href="#&#x6982;&#x7387;&#x56FE;&#x6A21;&#x578B;" class="headerlink" title="&#x6982;&#x7387;&#x56FE;&#x6A21;&#x578B;"></a>&#x6982;&#x7387;&#x56FE;&#x6A21;&#x578B;</h2><p>&#x5047;&#x8BBE;&#x6211;&#x4EEC;&#x6709;&#x4E09;&#x4E2A;&#x72EC;&#x7ACB;&#x6761;&#x4EF6;ABC&#xFF0C;&#x5F53;&#x6211;&#x4EEC;&#x60F3;&#x77E5;&#x9053;&#x4E09;&#x4E2A;&#x4E8B;&#x4EF6;&#x7684;&#x8054;&#x5408;&#x5206;&#x5E03; $ P(ABC) $ &#x7684;&#x65F6;&#x5019;&#xFF0C;&#x6839;&#x636E;&#x8D1D;&#x53F6;&#x65AF;&#x516C;&#x5F0F;&#x6211;&#x4EEC;&#x5C31;&#x80FD;&#x56DE;&#x7B54;&#x5F88;&#x591A;&#x6761;&#x4EF6;&#x6982;&#x7387;&#x95EE;&#x9898;&#x3002;</p>
+<p>&#x7136;&#x800C;&#xFF0C;&#x679C;&#x6211;&#x4EEC;&#x6839;&#x672C;&#x4E0D;&#x77E5;&#x9053;&#x8FD9;&#x4E09;&#x4E2A;&#x4E8B;&#x4EF6;&#x4E4B;&#x95F4;&#x7684;&#x5173;&#x7CFB;&#x7684;&#x8BDD;&#xFF08;&#x6CA1;&#x6709;&#x4EFB;&#x4F55;&#x5148;&#x9A8C;&#x77E5;&#x8BC6;&#x7684;&#x8BDD;&#xFF09;&#xFF0C;&#x90A3;&#x4E48;&#xFF0C;&#x5047;&#x8BBE;&#x6BCF;&#x4E2A;&#x4E8B;&#x4EF6;&#x90FD;&#x662F;&#x96F6;&#x4E00;&#x578B;&#x7684;&#xFF0C;&#x90A3;&#x4E48;&#x6BCF;&#x4E2A;&#x4E8B;&#x4EF6;&#x5149;&#x96F6;&#x4E00;&#x7EC4;&#x5408;&#x5C31;&#x6709;8&#x79CD;&#xFF0C;&#x4E09;&#x4E2A;&#x4E8B;&#x4EF6;&#x5C31;&#x8981;&#x5B58;&#x4E09;&#x4E2A;&#x8868;&#xFF0C;&#x624D;&#x80FD;&#x5F97;&#x5230;&#x8054;&#x5408;&#x5206;&#x5E03;&#x3002;&#x4E3A;&#x4E86;&#x5F97;&#x5230;&#x51E0;&#x4E2A;&#x6570;&#x6765;&#x8868;&#x793A;&#x8054;&#x5408;&#x5206;&#x5E03;&#xFF0C;&#x9700;&#x8981;&#x7684;&#x6570;&#x636E;&#x91CF;&#x662F;&#x5448;&#x6307;&#x6570;&#x7EA7;&#x589E;&#x52A0;&#x7684;&#xFF0C;&#x8FD9;&#x4E2A;&#x8BA1;&#x7B97;&#x91CF;&#x548C;&#x5B58;&#x50A8;&#x91CF;&#x5C31;&#x6839;&#x672C;&#x6CA1;&#x6CD5;&#x73A9;&#x4E86;&#x3002;</p>
+<p>&#x8FD9;&#x5C31;&#x662F;&#x56FE;&#x6A21;&#x578B;&#x8981;&#x89E3;&#x51B3;&#x7684;&#x6839;&#x672C;&#x95EE;&#x9898;&#x2014;&#x2014;<strong>&#x7EF4;&#x5EA6;&#x707E;&#x96BE;</strong>&#xFF0C;&#x9000;&#x4E00;&#x6B65;&#x8BF4;&#xFF0C;&#x5982;&#x679C;&#x6709;&#x4E00;&#x70B9;&#x5EFA;&#x6A21;&#x8005;&#x7684;&#x5148;&#x9A8C;&#x77E5;&#x8BC6;&#xFF0C;&#x80FD;&#x4E0D;&#x80FD;&#x628A;&#x6307;&#x6570;&#x7EA7;&#x522B;&#x7684;&#x590D;&#x6742;&#x5EA6;&#x538B;&#x5230;&#x591A;&#x9879;&#x5F0F;&#x7EA7;&#x522B;&#x6765;&#x5F97;&#x5230;&#x5168;&#x6982;&#x7387;&#x5462;&#xFF1F;</p>
+<p>&#x5047;&#x8BBE;&#x6709;&#x4E00;&#x4E2A;&#x5730;&#x9707;&#x6A21;&#x578B;&#xFF1A;&#x5F53;&#x5730;&#x9707;(E)&#x65F6;&#x548C;&#x906D;&#x8D3C;(B)&#x65F6;&#xFF0C;&#x8B66;&#x62A5;&#x90FD;&#x4F1A;&#x54CD;(A)&#xFF0C;&#x5F53;&#x5730;&#x9707;&#x65F6;&#xFF0C;&#x6536;&#x97F3;&#x673A;&#x4E5F;&#x4F1A;&#x54CD;(R)&#xFF0C;&#x800C;&#x8B66;&#x62A5;&#x54CD;&#x65F6;&#xFF0C;&#x6211;&#x8981;&#x7535;&#x8BDD;&#x62A5;&#x8B66;&#xFF08;C&#xFF09;&#x3002;</p>
+<p>&#x8FD9;&#x65F6;&#x5C31;&#x53EF;&#x4EE5;&#x5B9A;&#x4E49;&#x51FA;&#x4E00;&#x4E2A;&#x6709;&#x5411;&#x65E0;&#x73AF;&#x5173;&#x7CFB;&#x56FE;&#xFF1A;</p>
+<p><img src="/&#x673A;&#x5668;&#x5B66;&#x4E60;/&#x6982;&#x7387;&#x56FE;&#x6A21;&#x578B;/&#x62A5;&#x8B66;&#x6A21;&#x578B;.png" alt="logo"></p>
+<p>&#x6982;&#x7387;&#x56FE;&#x6A21;&#x578B;&#x7684;&#x610F;&#x56FE;&#x662F;&#xFF0C;&#x5F53;&#x6211;&#x4EEC;&#x53EF;&#x4EE5;&#x7528;&#x4E00;&#x4E2A;&#x56FE;&#x7684;&#x5173;&#x7CFB;&#x8868;&#x793A;&#x51FA;&#x53D8;&#x91CF;&#x4E4B;&#x95F4;&#x7684;&#x4F9D;&#x8D56;&#x7ED3;&#x6784;&#x65F6;&#xFF0C;&#x8054;&#x5408;&#x5206;&#x5E03;&#x5C31;&#x53EF;&#x4EE5;&#x5199;&#x6210;&#x4E00;&#x7CFB;&#x5217;&#x5C0F;&#x7684;&#x6982;&#x7387;&#x5206;&#x5E03;&#x7684;&#x4E58;&#x79EF;&#xFF0C;&#x6BCF;&#x4E00;&#x4E2A;&#x5C0F;&#x7684;&#x6982;&#x7387;&#x5206;&#x5E03;&#x90FD;&#x662F; $ P(&#x8282;&#x70B9;|&#x7236;&#x8282;&#x70B9;) $&#x3002;&#x6BD4;&#x5982;&#xFF1A;B&#x548C;E&#x90FD;&#x6CA1;&#x6709;&#x7236;&#x8282;&#x70B9;&#xFF0C;&#x5219;&#x4E24;&#x4E2A;&#x6982;&#x7387;&#x5206;&#x522B;&#x662F; $ P(B) $ &#x548C; $ P(E) $&#xFF0C;A&#x6709;&#x7236;&#x8282;&#x70B9;&#xFF0C;&#x5219;&#x662F; $ P(A|BE) $&#xFF0C;&#x540C;&#x7406;&#x8FD8;&#x6709; $ P(R|E) $ &#x548C; $ P(C|A) $&#x3002;</p>
+<p>&#x6240;&#x4EE5;&#x8FD9;&#x5F20;&#x56FE;&#x7684;&#x516C;&#x5F0F;&#x662F;&#xFF1A;</p>
+<p>$ P(B,E,A,R,C) = P(B)P(E)P(A|BE)P(R|E)P(C|A) $ </p>
+<p>&#x5047;&#x8BBE;&#x6BCF;&#x4E2A;&#x4E8B;&#x4EF6;&#x90FD;&#x662F;&#x96F6;&#x4E00;&#x578B;&#x7684;&#xFF0C;&#x8FD9;&#x6837;&#x4E00;&#x6765;&#xFF0C;&#x5C31;&#x6839;&#x672C;&#x4E0D;&#x9700;&#x8981;2&#x7684;5&#x6B21;&#x65B9;&#x4E2A;&#x6982;&#x7387;&#x6765;&#x5B66;&#x5F97;&#x8FD9;&#x4E2A;&#x516C;&#x5F0F;&#x4E86;&#xFF0C;&#x56E0;&#x4E3A;&#x8FD9;&#x91CC;&#x53EA;&#x6709;5&#x4E2A;&#x53D8;&#x91CF;&#x505A;&#x4E58;&#x79EF;&#xFF0C;&#x6240;&#x4EE5;&#x53EA;&#x9700;&#x8981;5&#x4E2A;&#x6982;&#x7387;&#x5206;&#x5E03;&#x5C31;&#x80FD;&#x8FBE;&#x5230;&#x671F;&#x671B;&#x7684;&#x6548;&#x679C;&#x4E86;&#x3002;</p>
+<p>&#x5728;&#x8FD9;&#x4E2A;&#x89C6;&#x89D2;&#x4E0B;&#xFF0C;&#x5982;&#x679C;&#x9700;&#x8981;&#x56DE;&#x7B54; $ P(C) $ &#x7684;&#x6982;&#x7387;&#x7A76;&#x7ADF;&#x662F;&#x591A;&#x5C11;&#xFF1F;&#x6700;&#x7B28;&#x7684;&#x65B9;&#x6CD5;&#x8981;&#x7528;&#x5168;&#x6982;&#x7387;&#x516C;&#x5F0F;&#x201C;&#x79EF;&#x6389;&#x201D;&#x6240;&#x6709;&#x5176;&#x4ED6;&#x53D8;&#x91CF;&#xFF0C;&#x8FD9;&#x53C8;&#x662F;&#x4E00;&#x4E2A;&#x5F88;&#x86CB;&#x75BC;&#x7684;N&#x5C42;for&#x5FAA;&#x73AF;&#x67E5;&#x8868;&#xFF0C;&#x8FD9;&#x53C8;&#x56DE;&#x5230;&#x4E86;&#x6307;&#x6570;&#x7EA7;&#x522B;&#x7684;&#x590D;&#x6742;&#x5EA6;&#xFF0C;&#x8FD9;&#x91CC;&#x53EF;&#x4EE5;&#x7528;&#x6D88;&#x5143;&#x6CD5;&#xFF08;variable elimination&#xFF09;&#x6765;&#x6D88;&#x9664;&#x65E0;&#x5173;&#x53D8;&#x91CF;&#x3002;</p>
+<h2 id="&#x6734;&#x7D20;&#x8D1D;&#x53F6;&#x65AF;&#xFF08;Naive-Bayes&#xFF09;"><a href="#&#x6734;&#x7D20;&#x8D1D;&#x53F6;&#x65AF;&#xFF08;Naive-Bayes&#xFF09;" class="headerlink" title="&#x6734;&#x7D20;&#x8D1D;&#x53F6;&#x65AF;&#xFF08;Naive Bayes&#xFF09;"></a>&#x6734;&#x7D20;&#x8D1D;&#x53F6;&#x65AF;&#xFF08;Naive Bayes&#xFF09;</h2><p>&#x6734;&#x7D20;&#x8D1D;&#x53F6;&#x65AF;&#x6A21;&#x578B;&#x662F;&#x4E00;&#x4E2A;&#x5728;70&#x5E74;&#x4EE3;&#x5C31;&#x6709;&#x7684;&#x6A21;&#x578B;&#xFF0C;&#x5B9E;&#x9645;&#x5C31;&#x662F;&#x4E00;&#x79CD;&#x7B80;&#x5316;&#x7684;&#x6982;&#x7387;&#x56FE;&#x6A21;&#x578B;&#xFF0C;&#x8F93;&#x5165;&#x662F;&#x5411;&#x91CF; $ X(x{_1} ,x{_2}&#x2026;) $&#xFF0C;&#x800C;&#x8FD9;&#x4E9B;&#x5C5E;&#x6027; $ x{_i} $ &#x662F;&#x76F8;&#x4E92;&#x72EC;&#x7ACB;&#x7684;&#xFF0C;&#x8F93;&#x51FA;&#x662F;&#x7ED3;&#x679C; $ Y $&#xFF0C;&#x663E;&#x7136;&#x673A;&#x5668;&#x5B66;&#x4E60;&#x60F3;&#x77E5;&#x9053;&#x7684;&#x5C31;&#x662F; $ P(Y|X) $&#x3002;</p>
+<p>&#x90A3;&#x4E48;&#x6839;&#x636E;&#x8D1D;&#x53F6;&#x65AF;&#x516C;&#x5F0F;&#x5C31;&#x6709;&#xFF1A;</p>
+<p>$ P(XY) = P(X)P(X{_1}|Y)P(X{_2}|Y)&#x2026;P(X{_n}|Y) $</p>
+<p>&#x8FD9;&#x6837;&#xFF0C;&#x5F53;&#x770B;&#x5230;&#x4E00;&#x4E2A;&#x65B0;&#x6837;&#x672C;&#x65F6;&#xFF0C;&#x5C31;&#x6709;</p>
+<p>$ P(Y|X) = \frac{p(XY)}{P(x)} $</p>
+<p>&#x8FD9;&#x91CC;&#x7684;&#x5206;&#x6BCD; $ P(x) $ &#x8BAD;&#x7EC3;&#x96C6;&#x4F1A;&#x6709;&#xFF0C;&#x800C; $ P(XY) $ &#x53EF;&#x4EE5;&#x6BCF;&#x9879;&#x67E5;&#x8868;&#x3002;</p>
+<h2 id="&#x5783;&#x573E;&#x90AE;&#x4EF6;&#x5206;&#x7C7B;&#x5668;"><a href="#&#x5783;&#x573E;&#x90AE;&#x4EF6;&#x5206;&#x7C7B;&#x5668;" class="headerlink" title="&#x5783;&#x573E;&#x90AE;&#x4EF6;&#x5206;&#x7C7B;&#x5668;"></a>&#x5783;&#x573E;&#x90AE;&#x4EF6;&#x5206;&#x7C7B;&#x5668;</h2><p>&#x5047;&#x8BBE;&#x6709;&#x4E00;&#x4E2A;Email&#xFF0C;&#x8868;&#x793A;&#x4E3A; $ X $&#xFF0C;&#x5B83;&#x662F;&#x4E0D;&#x662F;&#x5783;&#x573E;&#x90AE;&#x4EF6;&#x8868;&#x793A;&#x4E3A; $ Y $&#x3002;</p>
+<p>Email&#x662F;&#x4E2A;&#x6587;&#x672C;&#xFF0C;&#x5C06;&#x5176;&#x8868;&#x793A;&#x4E3A;One Hot&#x7684;&#x5F62;&#x5F0F;&#xFF0C;&#x5373;&#x628A;&#x6BCF;&#x4E2A;&#x8BCD;&#x4F5C;&#x4E3A;&#x4E00;&#x4E2A;index&#x7F16;&#x53F7;&#xFF0C;&#x5047;&#x8BBE;&#x201C;&#x6EDA;&#x201D;&#x662F;100&#x53F7;&#xFF0C;&#x90A3;&#x4E48;&#x5982;&#x679C;&#x8FD9;&#x7BC7;&#x6587;&#x7AE0;&#x91CC;&#x51FA;&#x73B0;&#x4E86;&#x8FD9;&#x4E2A;&#x8BCD;&#xFF0C;&#x5219;&#x8FD9;&#x4E2A;&#x5411;&#x91CF;&#x7684;&#x7B2C;100&#x53F7;&#x4F4D;&#x7F6E;&#x4E3A;1&#xFF0C;&#x5426;&#x5219;&#x4E3A;0&#xFF0C;&#x8FD9;&#x6837;&#x5C31;&#x5F97;&#x5230;&#x4E86;&#x4E00;&#x4E2A;&#x957F;&#x5EA6;&#x5F88;&#x957F;&#x7684;&#x4E00;&#x7EF4;&#x5411;&#x91CF;&#x3002;</p>
+<p>&#x90A3;&#x4E48;&#xFF0C;&#x5F53;&#x770B;&#x5230;&#x201C;&#x6EDA;&#x201D;&#x8FD9;&#x4E2A; $ x $ &#x7684;&#x65F6;&#x5019;&#xFF0C;&#x673A;&#x5668;&#x5B66;&#x4E60;&#x8981;&#x5E72;&#x7684;&#x4E8B;&#x60C5;&#x662F;&#x6C42; $ P(Y=1|X) $&#x3002;</p>
+<p>&#x6734;&#x7D20;&#x8D1D;&#x53F6;&#x65AF;&#x8BA4;&#x4E3A;&#xFF0C;&#x8FD9;&#x4E9B;&#x8BCD;&#x662F;&#x5F7C;&#x6B64;&#x72EC;&#x7ACB;&#x7684;&#xFF0C;&#x4E24;&#x4E2A;&#x8BCD;&#x4E4B;&#x95F4;&#x6CA1;&#x6709;&#x5173;&#x7CFB;&#xFF08;&#x6240;&#x4EE5;&#x5B83;Naive&#xFF09;&#xFF0C;&#x90A3;&#x4E48;&#x5C31;&#x6709;</p>
+<p>$ P(Y=1|X) = \frac{P(X|Y=1)P(Y)}{P(X)} $</p>
+<p>&#x5DE6;&#x4E0A;&#x89D2;&#x7684; $ P(X|Y=1) $ &#x7684;&#x6C42;&#x6CD5;&#x662F;&#xFF0C;&#x56E0;&#x4E3A;&#x6211;&#x77E5;&#x9053; $ P(XY) = P(Y)P(x{_1}|Y)P(x{_2}|Y)&#x2026; $ &#x662F;&#x8FDE;&#x4E58;&#x51FA;&#x6765;&#x7684;&#xFF0C;&#x90A3;&#x4E48;&#x53EA;&#x8981;&#x770B;&#x8BAD;&#x7EC3;&#x96C6;&#x7684;&#x5783;&#x573E;&#x90AE;&#x4EF6;&#x5F53;&#x4E2D;&#x6BCF;&#x4E2A;&#x8BCD;&#x7684;&#x51FA;&#x73B0;&#x6982;&#x7387;&#x662F;&#x591A;&#x5C11;&#x7B97;&#x4E00;&#x904D;&#xFF0C;&#x6709;&#x4E86;&#x8054;&#x5408;&#x5206;&#x5E03;&#x5C31;&#x80FD;&#x7B97;&#x51FA;&#x8FD9;&#x4E2A;&#x6761;&#x4EF6;&#x5206;&#x5E03;&#x4E86;&#x3002;&#x53F3;&#x4E0A;&#x89D2;&#x7684; $ P(Y) $ &#x76F4;&#x63A5;&#x770B;&#x8BAD;&#x7EC3;&#x96C6;&#x5F53;&#x4E2D;&#x5783;&#x573E;&#x90AE;&#x4EF6;&#x7684;&#x6BD4;&#x7387;&#x3002;&#x5206;&#x6BCD; $ P(X) $ &#x4E0D;&#x7528;&#x770B;&#xFF0C;&#x56E0;&#x4E3A;&#x6700;&#x7EC8;&#x5728;&#x5224;&#x5B9A;&#x662F;&#x4E0D;&#x662F;&#x5783;&#x573E;&#x90AE;&#x4EF6;&#x7684;&#x65F6;&#x5019;&#x6211;&#x4EEC;&#x8981;&#x6BD4;&#x7684;&#x662F; $ P(Y=1|x{_0}) $ &#x548C; $ P(Y=0|x{_0}) $ &#x54EA;&#x4E2A;&#x5927;&#xFF0C;&#x4E24;&#x8FB9;&#x5206;&#x6BCD;&#x4E00;&#x6837;&#x76F4;&#x63A5;&#x6D88;&#x4E86;&#x3002;</p>
+<p>&#x4F46;&#x662F;&#x4EFB;&#x4F55;&#x4E00;&#x4E2A; $ P(x{_i}|Y) $ &#x90FD;&#x662F;&#x8981;&#x7EDF;&#x8BA1;&#x51FA;&#x6765;&#x7684;&#xFF0C;&#x5982;&#x679C;&#x6574;&#x4E2A;&#x5411;&#x91CF;&#x91CC;&#x5B58;&#x5728;&#x4E00;&#x4E2A;&#x6CA1;&#x6709;&#x5B66;&#x4E60;&#x8FC7;&#x7684;&#x8BCD;&#x7684;&#x8BDD;&#xFF0C;&#x90A3;&#x4E48;&#x4F1A;&#x5BFC;&#x81F4;&#x7ED3;&#x679C;&#x4E3A;0&#xFF0C;&#x5206;&#x6BCD;&#x4E5F;&#x4E3A;0&#xFF0C;&#x65B9;&#x6CD5;&#x662F;&#x5C06;&#x6240;&#x6709;&#x5355;&#x8BCD;&#x51FA;&#x73B0;&#x7684;&#x6B21;&#x6570;&#x90FD;+1&#xFF0C;&#x5F53;&#x6570;&#x636E;&#x91CF;&#x5F88;&#x5927;&#x65F6;&#xFF0C;&#x8FD9;&#x4E2A;+1&#x5E76;&#x4E0D;&#x663E;&#x8457;&#x5F71;&#x54CD;&#x6574;&#x4E2A;&#x6982;&#x7387;&#xFF0C;&#x8FD9;&#x4E2A;&#x65B9;&#x6CD5;&#x53EB;<strong>&#x62C9;&#x666E;&#x62C9;&#x65AF;&#x5E73;&#x6ED1;</strong>&#x3002;</p>
+<h2 id="&#x9690;&#x9A6C;&#x5C14;&#x53EF;&#x592B;&#x6A21;&#x578B;&#xFF08;HMM&#xFF09;"><a href="#&#x9690;&#x9A6C;&#x5C14;&#x53EF;&#x592B;&#x6A21;&#x578B;&#xFF08;HMM&#xFF09;" class="headerlink" title="&#x9690;&#x9A6C;&#x5C14;&#x53EF;&#x592B;&#x6A21;&#x578B;&#xFF08;HMM&#xFF09;"></a>&#x9690;&#x9A6C;&#x5C14;&#x53EF;&#x592B;&#x6A21;&#x578B;&#xFF08;HMM&#xFF09;</h2><p>&#x5728;&#x673A;&#x5668;&#x5B66;&#x4E60;&#x4E2D;&#x6709;&#x4E2A;&#x6BCF;&#x4E2A;&#x53D8;&#x91CF;&#x90FD;&#x662F;&#x72EC;&#x7ACB;&#x540C;&#x5206;&#x5E03;&#x7684;&#x5047;&#x8BBE;&#xFF0C;&#x7136;&#x800C;&#x5728;&#x65F6;&#x95F4;&#x5E8F;&#x5217;&#x5F53;&#x4E2D;&#xFF0C;&#x67D0;&#x4E2A;&#x65F6;&#x523B;&#x7684;&#x6570;&#x636E;&#x662F;&#x548C;&#x4E4B;&#x524D;&#x7684;&#x65F6;&#x523B;&#x662F;&#x6709;&#x5173;&#x7CFB;&#x7684;&#xFF0C;&#x90A3;&#x4E48;&#x7528;SVM&#x4E4B;&#x7C7B;&#x7684;&#x65E0;&#x8BB0;&#x5FC6;&#x6027;&#x7684;&#x65B9;&#x6CD5;&#x6765;&#x8BA1;&#x7B97;&#x4ECE;&#x6839;&#x4E0A;&#x5C31;&#x662F;&#x6709;&#x95EE;&#x9898;&#x7684;&#x3002;</p>
+<p>&#x5BF9;&#x4E8E;&#x4E00;&#x4E2A; $ X -&gt; Y $ &#x7684;&#x7B80;&#x5355;&#x6982;&#x7387;&#x56FE;&#xFF0C;&#x6709; $ P(XY) = P(X)P(Y|X) $ &#xFF0C;&#x8FD9;&#x91CC;&#x7BA1; $ X $ &#x53EB;&#x9690;&#x53D8;&#x91CF;&#xFF0C;&#x662F;&#x4E0D;&#x77E5;&#x9053;&#x7684;&#x6F5C;&#x5728;&#x56E0;&#x7D20;&#xFF0C;&#x800C; $ Y $ &#x662F;&#x89C2;&#x6D4B;&#x503C;&#xFF0C;&#x5982; $ X $ &#x662F;&#x5FC3;&#x60C5; $ Y $ &#x662F;&#x8868;&#x60C5;&#xFF0C;&#x90A3;&#x4E48;&#x901A;&#x8FC7;&#x5916;&#x5728;&#x8868;&#x73B0;&#x5C31;&#x53EF;&#x4EE5;&#x63A8;&#x65AD;&#x51FA;&#x9690;&#x53D8;&#x91CF;&#x662F;&#x4EC0;&#x4E48;&#x7684;&#x6982;&#x7387;&#xFF0C;&#x5982; $ P(X=&#x4F24;&#x5FC3;|Y=&#x54ED;) $ &#x7684;&#x6982;&#x7387;&#x5C31;&#x6BD4;&#x8F83;&#x9AD8;&#xFF0C;&#x540C;&#x7406;&#xFF0C;&#x53EF;&#x4EE5;&#x4ECE;&#x80A1;&#x7968;&#x4EF7;&#x683C;&#x6765;&#x63A8;&#x65AD;&#x662F;&#x725B;&#x5E02;&#x8FD8;&#x662F;&#x718A;&#x5E02;&#xFF0C;&#x8FD9;&#x5C31;&#x662F;&#x9690;&#x9A6C;&#x5C14;&#x53EF;&#x592B;&#x6A21;&#x578B;&#x6216;&#x8005;&#x63A8;&#x65AD;&#x7CFB;&#x7EDF;&#x60F3;&#x5E72;&#x7684;&#x4E8B;&#x60C5;&#x3002;</p>
+<p>&#x5728;&#x8FD9;&#x4E2A;&#x6982;&#x7387;&#x56FE;&#x4E2D;&#xFF0C;$ P(X) $ &#x662F;&#x901A;&#x8FC7;&#x8BAD;&#x7EC3;&#x96C6;&#x5386;&#x53F2;&#x6570;&#x636E;&#x603B;&#x7ED3;&#x7684;&#xFF0C;&#x53EF;&#x4EE5;&#x67E5;&#x8868;&#x5F97;&#x5230;&#xFF0C;&#x800C; $ P(Y|X) $ &#x5219;&#x662F;&#x4E2A;&#x4E8C;&#x7EF4;&#x8868;&#xFF0C;&#x5F53; $ X $ &#x53D6;&#x67D0;&#x4E2A;&#x503C;&#x7684;&#x65F6;&#x5019;&#xFF0C;&#x80FD;&#x5BF9;&#x5E94;&#x6BCF;&#x79CD; $ Y $ &#x7684;&#x6982;&#x7387;&#xFF0C;&#x548C;&#x4E3A;1&#x3002;&#x7136;&#x800C;&#x673A;&#x5668;&#x5B66;&#x4E60;&#x8981;&#x5F97;&#x5230;&#x7684;&#x662F; $ P(X|Y) $&#xFF0C;&#x8FD9;&#x65F6;&#x5019;&#x5C31;&#x53EF;&#x4EE5;&#x7528;&#x8D1D;&#x53F6;&#x65AF;&#x516C;&#x5F0F;&#x7B97;&#x4E86;&#xFF1A;$ P(X|Y) = \frac{P(Y|X)P(X)}{P(Y)} $&#x3002;</p>
+<p>&#x95EE;&#x9898;&#x5728;&#x4E8E;&#xFF0C;&#x9690;&#x53D8;&#x91CF;&#x4F1A;&#x968F;&#x7740;&#x65F6;&#x95F4;&#x4ECE; $ x1 $ &#x8F6C;&#x5316;&#x4E3A; $ x2 $&#x3001;$ x3 $&#xFF0C;&#x8FD9;&#x6837;&#x5047;&#x8BBE;&#x9690;&#x53D8;&#x91CF;&#x6709;3&#x4E2A;&#x72B6;&#x6001;&#xFF0C;&#x90A3;&#x4E48;&#x6982;&#x7387;&#x56FE;&#x5C31;&#x6709;6&#x4E2A;&#x53D8;&#x91CF;&#x4E86;&#x3002;</p>
+<p>&#x3010;&#x56FE;50&#xFF1A;50&#x3011;</p>
+<p>&#x90A3;&#x4E48;&#x53C8;&#x80FD;&#x5F97;&#x5230;&#x4E00;&#x4E2A;&#x8054;&#x5408;&#x5206;&#x5E03;&#xFF1A;<br>$ P(X1X2X3Y1Y2Y3) = P(X1)P(Y1|X1) P(X2|X1)P(Y2|X2) P(X3|X2)P(Y3|X3)) $</p>
+<p>&#x5176;&#x4E2D;&#xFF0C;&#x6709;&#x4E9B;&#x9879;&#x53EA;&#x548C; $ X $ &#x6709;&#x5173;&#xFF0C;&#x5982; $ P(X1) P(X2|X1) P(X3|X2) $&#xFF0C;&#x8FD9;&#x4E9B;&#x9879;&#x53EB;&#x505A;<strong>&#x72B6;&#x6001;&#x8F6C;&#x79FB;</strong>&#xFF0C;&#x5373;&#x9690;&#x53D8;&#x91CF;&#x4E00;&#x4E2A;&#x72B6;&#x6001;&#x8F6C;&#x5316;&#x4E3A;&#x53E6;&#x4E00;&#x4E2A;&#x72B6;&#x6001;&#x7684;&#x6982;&#x7387;&#xFF0C;&#x53E6;&#x4E00;&#x7C7B;&#x662F; $ P(Y1|X1) P(Y2|X2) P(Y3|X3) $&#xFF0C;&#x4E24;&#x4E2A;&#x4E0B;&#x6807;&#x90FD;&#x76F8;&#x7B49;&#xFF0C;&#x53EB;<strong>&#x8F93;&#x51FA;&#x6982;&#x7387;</strong>&#xFF0C;&#x5373;&#x5728;&#x67D0;&#x4E2A;&#x65F6;&#x523B;&#x4E0B;&#x4ECE;&#x9690;&#x53D8;&#x91CF;&#x8F6C;&#x5316;&#x4E3A;&#x5177;&#x4F53;&#x8868;&#x73B0;&#x7684;&#x6982;&#x7387;&#x3002;&#x800C;&#x9690;&#x9A6C;&#x5C14;&#x53EF;&#x592B;&#x6A21;&#x578B;&#x7684;&#x4E00;&#x4E2A;&#x5173;&#x952E;&#x5047;&#x8BBE;&#x5C31;&#x662F;&#x6BCF;&#x4E00;&#x6B21;&#x72B6;&#x6001;&#x8F6C;&#x79FB;&#x7684;&#x6982;&#x7387;&#x90FD;&#x662F;&#x76F8;&#x7B49;&#x7684;&#xFF0C;&#x5373;&#x53EF;&#x4EE5;&#x7528;&#x4E00;&#x4E2A;&#x56FA;&#x5B9A;&#x7684;&#x8F6C;&#x79FB;&#x77E9;&#x9635;&#x6765;&#x8868;&#x793A;&#x6982;&#x7387;&#x3002;</p>
+<p>&#x3010;&#x56FE;54&#xFF1A;36&#x3011;</p>
+<p>&#x9690;&#x9A6C;&#x5C14;&#x53EF;&#x592B;&#x6A21;&#x578B;&#x7684;&#x53E6;&#x4E00;&#x4E2A;&#x5047;&#x8BBE;&#x5C31;&#x662F;&#xFF0C;&#x9690;&#x53D8;&#x91CF;&#x4E4B;&#x95F4;&#x53EA;&#x4F1A;&#x4ECE;&#x72B6;&#x6001;1&#x8F6C;&#x5316;&#x4E3A;&#x72B6;&#x6001;2&#xFF0C;&#x800C;&#x4E0D;&#x4F1A;&#x4ECE;2&#x5230;3&#x4E14;&#x4ECE;1&#x5230;3&#xFF0C;&#x8FD9;&#x79CD;&#x60C5;&#x51B5;&#x53EF;&#x4EE5;&#x901A;&#x8FC7;&#x5BF9;&#x9690;&#x53D8;&#x91CF;&#x52A0;&#x9690;&#x53D8;&#x91CF;&#xFF0C;&#x5373;&#x6DF1;&#x5C42;&#x7684;&#x9690;&#x9A6C;&#x5C14;&#x53EF;&#x592B;&#xFF0C;&#x4F46;&#x662F;&#x8FD9;&#x8BA1;&#x7B97;&#x5F88;&#x590D;&#x6742;&#x3002;</p>
+<p>&#x9690;&#x9A6C;&#x5C14;&#x53EF;&#x592B;&#x6A21;&#x578B;&#x6700;&#x5E38;&#x89C1;&#x7684;&#x7528;&#x6CD5;&#x662F;&#xFF0C;&#x5F53;&#x89C2;&#x6D4B;&#x5230; $ Y1&#xFF0C;Y2,Y3 $ &#x7684;&#x5177;&#x4F53;&#x8868;&#x73B0;&#x65F6;&#xFF0C;&#x60F3;&#x6C42;&#x5F97;&#x9690;&#x53D8;&#x91CF;&#x7684;&#x6982;&#x7387; $ P(X3=?|Y1,Y2,Y3) $ &#x662F;&#x591A;&#x5C11;&#xFF0C;&#x8FD9;&#x53C8;&#x56DE;&#x5230;&#x4E86;&#x524D;&#x9762;&#x7684;&#x6C42;&#x89E3;&#x6982;&#x7387;&#x56FE;&#x7684;&#x95EE;&#x9898;&#x3002;</p>
+<p>&#x8981;&#x6CE8;&#x610F;&#x7684;&#x662F;&#xFF0C;HMM&#x662F;&#x5E73;&#x65B9;&#x7EA7;&#x590D;&#x6742;&#x5EA6;&#x7684;&#x7B97;&#x6CD5;&#xFF0C;&#x800C;RNN&#x7684;&#x6548;&#x679C;&#x66F4;&#x597D;&#x3002;</p>
+<h2 id="&#x8BED;&#x97F3;&#x8BC6;&#x522B;&#x95EE;&#x9898;"><a href="#&#x8BED;&#x97F3;&#x8BC6;&#x522B;&#x95EE;&#x9898;" class="headerlink" title="&#x8BED;&#x97F3;&#x8BC6;&#x522B;&#x95EE;&#x9898;"></a>&#x8BED;&#x97F3;&#x8BC6;&#x522B;&#x95EE;&#x9898;</h2><p>&#x8BED;&#x97F3;&#x8BC6;&#x522B;&#x5B9E;&#x9645;&#x4E0A;&#x662F;&#x60F3;&#x77E5;&#x9053;&#x5F53;&#x542C;&#x5230;&#x4E00;&#x4E2A;&#x58F0;&#x97F3;&#x5B83;&#x5BF9;&#x5E94;&#x662F;&#x67D0;&#x4E2A;&#x5355;&#x8BCD;&#x7684;&#x6982;&#x7387; $ P(words|sound) $&#xFF0C;&#x800C;&#x60F3;&#x77E5;&#x9053;&#x8BCD;&#x5BF9;&#x5E94;&#x7684;&#x58F0;&#x97F3;&#x7684;&#x6982;&#x7387; $ P(sound|words) $ &#x662F;&#x5BB9;&#x6613;&#x7684;&#xFF0C;&#x5927;&#x4E0D;&#x4E86;&#x90FD;&#x8BFB;&#x4E00;&#x904D;&#x66B4;&#x529B;&#x67E5;&#x8868;&#xFF0C;&#x800C;&#x77E5;&#x9053;&#x8FD9;&#x4E2A;&#x5355;&#x8BCD;&#x672C;&#x8EAB;&#x7684;&#x6982;&#x7387; $ P(words) $ &#x5219;&#x662F;&#x66F4;&#x7B80;&#x5355;&#x7684;&#x8BCD;&#x9891;&#x7EDF;&#x8BA1;&#x95EE;&#x9898;&#xFF0C;&#x6240;&#x4EE5;&#xFF1A;</p>
+<p>$ P(words|sound) = P(sound|words)P(words) $</p>
+<p>&#x800C;&#x5B57;&#x662F;&#x5B58;&#x5728;&#x4E8E;&#x53E5;&#x5B50;&#x5F53;&#x4E2D;&#x7684;&#xFF0C;&#x5373;&#x542C;&#x5230;&#x4E86;&#x201C;&#x4F60;&#x597D;&#x5417;&#x201D;&#x4E09;&#x4E2A;&#x5B57;&#x7684;&#x9891;&#x7387;&#x7684;&#x65F6;&#x5019;&#xFF0C;&#x9700;&#x8981;&#x7528;&#x9690;&#x9A6C;&#x5C14;&#x53EF;&#x592B;&#x63A8;&#x6D4B;&#x51FA;&#x7B2C;&#x4E09;&#x4E2A;&#x5B57;&#x662F;&#x201C;&#x5417;&#x201D;&#x7684;&#x6982;&#x7387;&#x662F;&#x591A;&#x5C11;&#x3002;</p>
+<h2 id="&#x5FAA;&#x73AF;&#x795E;&#x7ECF;&#x7F51;&#x7EDC;&#xFF08;RNN&#xFF09;"><a href="#&#x5FAA;&#x73AF;&#x795E;&#x7ECF;&#x7F51;&#x7EDC;&#xFF08;RNN&#xFF09;" class="headerlink" title="&#x5FAA;&#x73AF;&#x795E;&#x7ECF;&#x7F51;&#x7EDC;&#xFF08;RNN&#xFF09;"></a>&#x5FAA;&#x73AF;&#x795E;&#x7ECF;&#x7F51;&#x7EDC;&#xFF08;RNN&#xFF09;</h2><p>RNN&#x7684;&#x505A;&#x6CD5;&#x662F;&#xFF0C;&#x6BCF;&#x4E2A;&#x65F6;&#x523B;&#x90FD;&#x6709;&#x4E00;&#x4E2A;&#x8F93;&#x5165;&#x6BD4;&#x5982;&#x201C;&#x4F60;&#x201D;&#x5411;&#x91CF;&#xFF0C;&#x90FD;&#x4F1A;&#x4E58;&#x4EE5;&#x4E00;&#x4E2A;&#x5927;&#x77E9;&#x9635;&#xFF0C;&#x5F97;&#x5230;&#x65B0;&#x7684;&#x5411;&#x91CF;&#xFF0C;&#x5373;&#x9690;&#x5C42;&#xFF0C;&#x4E5F;&#x5C31;&#x662F;&#x4E0A;&#x9762;&#x7684;&#x9690;&#x53D8;&#x91CF;X&#xFF0C;&#x800C;&#x8F93;&#x51FA;&#x7684;&#x201C;You&#x201D;&#x662F;&#x8981;&#x5F80;&#x524D;&#x770B;&#x51E0;&#x4E2A;&#x65F6;&#x95F4;&#x70B9;&#x7684;X&#x624D;&#x80FD;&#x5171;&#x540C;&#x51B3;&#x5B9A;&#x7684;&#xFF0C;&#x8981;&#x5B66;&#x7684;&#x5C31;&#x662F;&#x8FD9;&#x4E9B;&#x5927;&#x77E9;&#x9635;&#x3002;&#x800C;HMM&#x53EA;&#x5F80;&#x524D;&#x770B;&#x4E00;&#x4E2A;&#x65F6;&#x95F4;&#x70B9;&#x3002;</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+
+    <footer class="post-footer">
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/机器学习/K-Means聚类/" rel="next" title="K-Means聚类">
+                <i class="fa fa-chevron-left"></i> K-Means聚类
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/心情随笔/ 杂谈一下社交网络当中的人际问题/" rel="prev" title="杂谈一下社交网络当中的人际问题">
+                杂谈一下社交网络当中的人际问题 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/icon.jpeg"
+               alt="アカリ" />
+          <p class="site-author-name" itemprop="name">アカリ</p>
+          <p class="site-description motion-element" itemprop="description">很羡慕工作后辞职读研的人，能腾出一两年的大片时间来专心学习某个自己喜欢的领域的知识技能其实是一件非常幸福的事……</p>
+        </div>
+        <nav class="site-state motion-element">
+        
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/">
+                <span class="site-state-item-count">11</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">3</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#问题提出"><span class="nav-number">1.</span> <span class="nav-text">问题提出</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#贝叶斯公式"><span class="nav-number">2.</span> <span class="nav-text">贝叶斯公式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#解题"><span class="nav-number">3.</span> <span class="nav-text">解题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#概率图模型"><span class="nav-number">4.</span> <span class="nav-text">概率图模型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#朴素贝叶斯（Naive-Bayes）"><span class="nav-number">5.</span> <span class="nav-text">朴素贝叶斯（Naive Bayes）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#垃圾邮件分类器"><span class="nav-number">6.</span> <span class="nav-text">垃圾邮件分类器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#隐马尔可夫模型（HMM）"><span class="nav-number">7.</span> <span class="nav-text">隐马尔可夫模型（HMM）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#语音识别问题"><span class="nav-number">8.</span> <span class="nav-text">语音识别问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#循环神经网络（RNN）"><span class="nav-number">9.</span> <span class="nav-text">循环神经网络（RNN）</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">アカリ</span>
+</div>
+
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.0"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.0"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=default"></script>
+  
+
+
+  
+
+  
+
+  
+
+
+</body>
+</html>
