@@ -1,0 +1,702 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.0" />
+
+
+
+
+
+
+<meta name="description" content="神经网络不光可以用来做有监督的分类，也可以用来做无监督的生成，比如图像生成，而所谓对抗则是一种反复训练生成器和判别器的过程使得二者在相互促进的过程当中让生成器达到最优。这篇文章笔记一下GAN的原理和实现。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="生成对抗网络">
+<meta property="og:url" content="http://yoursite.com/机器学习/生成对抗网络/index.html">
+<meta property="og:site_name" content="アカリの部屋">
+<meta property="og:description" content="神经网络不光可以用来做有监督的分类，也可以用来做无监督的生成，比如图像生成，而所谓对抗则是一种反复训练生成器和判别器的过程使得二者在相互促进的过程当中让生成器达到最优。这篇文章笔记一下GAN的原理和实现。">
+<meta property="og:image" content="http://yoursite.com/机器学习/生成对抗网络/autoencoder.png">
+<meta property="og:image" content="http://yoursite.com/机器学习/生成对抗网络/GAN模型结构.png">
+<meta property="og:image" content="http://yoursite.com/机器学习/生成对抗网络/GAN模拟分布.png">
+<meta property="og:image" content="http://yoursite.com/机器学习/生成对抗网络/GAN寻找鞍点.png">
+<meta property="og:updated_time" content="2017-07-20T14:44:12.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="生成对抗网络">
+<meta name="twitter:description" content="神经网络不光可以用来做有监督的分类，也可以用来做无监督的生成，比如图像生成，而所谓对抗则是一种反复训练生成器和判别器的过程使得二者在相互促进的过程当中让生成器达到最优。这篇文章笔记一下GAN的原理和实现。">
+<meta name="twitter:image" content="http://yoursite.com/机器学习/生成对抗网络/autoencoder.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/机器学习/生成对抗网络/"/>
+
+
+
+
+
+  <title> 生成对抗网络 | アカリの部屋 </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">アカリの部屋</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+    
+      <p class="site-subtitle"></p>
+    
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-links">
+          <a href="/links" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
+            
+            友链
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+  <link itemprop="mainEntityOfPage" href="http://yoursite.com/机器学习/生成对抗网络/">
+
+  <span style="display:none" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <meta itemprop="name" content="アカリ">
+    <meta itemprop="description" content="">
+    <meta itemprop="image" content="/images/icon.jpeg">
+  </span>
+
+  <span style="display:none" itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+    <meta itemprop="name" content="アカリの部屋">
+    <span style="display:none" itemprop="logo" itemscope itemtype="http://schema.org/ImageObject">
+      <img style="display:none;" itemprop="url image" alt="アカリの部屋" src="">
+    </span>
+  </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                生成对抗网络
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-07-20T22:00:00+08:00">
+                2017-07-20
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/机器学习/" itemprop="url" rel="index">
+                    <span itemprop="name">机器学习</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+          
+
+          
+              <div class="post-description">
+                  神经网络不光可以用来做有监督的分类，也可以用来做无监督的生成，比如图像生成，而所谓对抗则是一种反复训练生成器和判别器的过程使得二者在相互促进的过程当中让生成器达到最优。这篇文章笔记一下GAN的原理和实现。
+              </div>
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="&#x795E;&#x7ECF;&#x7F51;&#x7EDC;&#x7684;&#x65E0;&#x76D1;&#x7763;&#x5B66;&#x4E60;"><a href="#&#x795E;&#x7ECF;&#x7F51;&#x7EDC;&#x7684;&#x65E0;&#x76D1;&#x7763;&#x5B66;&#x4E60;" class="headerlink" title="&#x795E;&#x7ECF;&#x7F51;&#x7EDC;&#x7684;&#x65E0;&#x76D1;&#x7763;&#x5B66;&#x4E60;"></a>&#x795E;&#x7ECF;&#x7F51;&#x7EDC;&#x7684;&#x65E0;&#x76D1;&#x7763;&#x5B66;&#x4E60;</h2><p>&#x673A;&#x5668;&#x5B66;&#x4E60;&#x6A21;&#x578B;&#x53EF;&#x4EE5;&#x5927;&#x4F53;&#x5206;&#x4E3A;&#x751F;&#x6210;&#x6A21;&#x578B;&#x548C;&#x5224;&#x522B;&#x6A21;&#x578B;&#x4E24;&#x79CD;&#xFF0C;&#x5224;&#x522B;&#x6A21;&#x578B;&#x5C31;&#x662F;&#x5B66;&#x5230;&#x4E00;&#x4E2A;&#x5224;&#x522B;&#x5668;f&#x8F93;&#x51FA;&#x4E00;&#x4E2A;&#x6982;&#x7387;&#xFF0C;&#x6BD4;&#x5982;LR&#xFF0C;&#x800C;&#x751F;&#x6210;&#x6A21;&#x578B;&#x5219;&#x662F;&#x5F97;&#x5230;&#x4E00;&#x4E2A;&#x8054;&#x5408;&#x6982;&#x7387;&#x3002;&#x901A;&#x8FC7;CNN&#x5206;&#x7C7B;&#x80FD;&#x8BC6;&#x522B;&#x4E00;&#x5F20;&#x56FE;&#x7247;&#x53EA;&#x662F;&#x4E00;&#x4E2A;&#x5224;&#x522B;&#xFF0C;&#x800C;&#x80FD;&#x6839;&#x636E;&#x77E5;&#x8BC6;&#x521B;&#x9020;&#x51FA;&#x4E00;&#x4E2A;&#x4E1C;&#x897F;&#xFF0C;&#x624D;&#x662F;&#x771F;&#x6B63;&#x5B66;&#x4F1A;&#x4E86;&#x4E00;&#x6837;&#x4E1C;&#x897F;&#x3002;</p>
+<p>&#x65E0;&#x76D1;&#x7763;&#x7684;&#x610F;&#x56FE;&#x662F;&#x4E3A;&#x4E86;&#x8BA9;&#x6570;&#x636E;&#x81EA;&#x5DF1;&#x9A71;&#x52A8;&#x81EA;&#x5DF1;&#x6765;&#x5B66;&#x5F97;&#x4E00;&#x4E9B;&#x4E1C;&#x897F;&#xFF0C;&#x4EE5;&#x524D;&#x6709;&#x4E00;&#x79CD;&#x53EB;&#x505A;autoencoder&#x7684;&#x7F51;&#x7EDC;&#x8FDB;&#x884C;&#x65E0;&#x76D1;&#x7763;&#x5B66;&#x4E60;&#xFF0C;&#x5373;&#x5BF9;&#x4E00;&#x5F20;&#x8F93;&#x5165;&#x56FE;&#x7247;&#x81EA;&#x5DF1;&#xFF0C;&#x7528;&#x4E00;&#x4E2A;&#x5F88;&#x7B80;&#x5355;&#x7684;NN&#x8FDB;&#x884C;&#x7F16;&#x7801;&#x6620;&#x5C04;&#x6210;&#x4E00;&#x4E2A;&#x5411;&#x91CF;&#xFF0C;&#x4E4B;&#x540E;&#x89E3;&#x7801;&#xFF0C;&#x5373;&#x6620;&#x5C04;&#x56DE;&#x539F;&#x5148;&#x5927;&#x5C0F;&#x7684;&#x77E9;&#x9635;&#xFF0C;&#x4F7F;&#x7528;&#x6700;&#x5C0F;&#x5316;&#x5747;&#x65B9;&#x8BEF;&#x5DEE;&#x635F;&#x5931;&#x5BF9;&#x8F93;&#x5165;&#x8F93;&#x51FA;&#x4E4B;&#x95F4;&#x7684;&#x5DEE;&#x8DDD;&#x6700;&#x5C0F;&#x5316;&#xFF0C;&#x4E4B;&#x540E;&#x53D6;&#x51FA;Decoder&#xFF0C;&#x5373;&#x53EF;&#x62FF;&#x6765;&#x5BF9;&#x6BD4;&#x65B0;&#x7684;&#x8F93;&#x5165;&#x548C;&#x8F93;&#x51FA;&#x3002;&#x4F46;&#x662F;&#x8FD9;&#x79CD;&#x7B97;&#x6CD5;&#x5B58;&#x5728;&#x5F88;&#x591A;&#x95EE;&#x9898;&#xFF0C;&#x6BD4;&#x5982;&#x5728;&#x57FA;&#x4E8E;&#x50CF;&#x7D20;&#x5BF9;&#x50CF;&#x7D20;&#x7684;&#x5747;&#x65B9;&#x8BEF;&#x5DEE;&#x7684;&#x8BC4;&#x5224;&#x6807;&#x51C6;&#xFF0C;&#x5F88;&#x96BE;&#x4ECE;&#x56FE;&#x7247;&#x6574;&#x4F53;&#x4E0A;&#x50CF;&#x4EBA;&#x4E00;&#x6837;&#x8BC6;&#x522B;&#x56FE;&#x7247;&#x4E2D;&#x7684;&#x7EC6;&#x5FAE;&#x4E0D;&#x540C;&#x3002;</p>
+<p><img src="/&#x673A;&#x5668;&#x5B66;&#x4E60;/&#x751F;&#x6210;&#x5BF9;&#x6297;&#x7F51;&#x7EDC;/autoencoder.png" alt="logo"></p>
+<h2 id="GAN&#x7684;&#x7ED3;&#x6784;"><a href="#GAN&#x7684;&#x7ED3;&#x6784;" class="headerlink" title="GAN&#x7684;&#x7ED3;&#x6784;"></a>GAN&#x7684;&#x7ED3;&#x6784;</h2><p>&#x4E3A;&#x89E3;&#x51B3;&#x8FD9;&#x4E2A;&#x95EE;&#x9898;&#x6709;&#x4E86;&#x751F;&#x6210;&#x5BF9;&#x6297;&#x7F51;&#x7EDC;&#xFF08;GAN&#xFF09;&#xFF0C;GAN&#x662F;&#x4E00;&#x4E2A;&#x5C42;&#x6B21;&#x6BD4;&#x8F83;&#x6DF1;&#x7684;&#x7F51;&#x7EDC;&#xFF0C;&#x5B83;&#x6709;&#x4E24;&#x4E2A;&#x90E8;&#x5206;&#xFF0C;&#x4E00;&#x4E2A;&#x53EB;Generator&#xFF08;&#x751F;&#x6210;&#x5668;&#xFF09;&#xFF0C;&#x8D1F;&#x8D23;&#x751F;&#x6210;&#x6837;&#x672C;&#xFF0C;&#x76F4;&#x5230;&#x7F51;&#x7EDC;&#x7684;&#x67D0;&#x4E2A;&#x5C42;&#xFF0C;&#x53E6;&#x4E00;&#x4E2A;&#x90E8;&#x5206;&#x53EB;Discriminator&#xFF08;&#x5224;&#x522B;&#x5668;&#xFF09;&#xFF0C;&#x5B83;&#x662F;&#x4E2A;&#x4E8C;&#x5206;&#x7C7B;&#x5668;&#xFF0C;&#x8D1F;&#x8D23;&#x5224;&#x65AD;&#x8FD9;&#x4E2A;&#x6837;&#x672C;&#x662F;&#x4F2A;&#x9020;&#x751F;&#x6210;&#x7684;&#x8FD8;&#x662F;&#x5B9E;&#x9645;&#x7684;&#xFF0C;&#x5728;&#x8BAD;&#x7EC3;&#x7684;&#x65F6;&#x5019;&#xFF0C;&#x56FA;&#x5B9A;&#x4F4F;&#x67D0;&#x4E9B;&#x5C42;&#x7684;&#x6743;&#x91CD;&#xFF0C;&#x4E8C;&#x8005;&#x8F6E;&#x6D41;&#x8BAD;&#x7EC3;&#xFF0C;&#x76F8;&#x4E92;&#x4FC3;&#x8FDB;&#xFF0C;&#x4F7F;&#x5F97;&#x751F;&#x6210;&#x7684;&#x7ED3;&#x679C;&#x8D8A;&#x6765;&#x8D8A;&#x771F;&#x5B9E;&#xFF0C;&#x6700;&#x7EC8;&#x53D6;&#x51FA;Generator&#x6765;&#x7528;&#x3002;</p>
+<p>&#x5BF9;&#x4E8E;&#x6574;&#x4E2A;&#x7F51;&#x7EDC;&#x7684;&#x6267;&#x884C;&#x6D41;&#x7A0B;&#x6765;&#x8BF4;&#xFF0C;&#x9996;&#x5148;&#xFF0C;Generator&#x968F;&#x673A;&#x751F;&#x6210;&#x4E00;&#x4E07;&#x5F20;&#x56FE;&#x7247;&#x4F5C;&#x4E3A;&#x8D1F;&#x6837;&#x672C;&#xFF0C;&#x7136;&#x540E;&#x8054;&#x5408;&#x4E00;&#x4E07;&#x5F20;&#x771F;&#x5B9E;&#x4E16;&#x754C;&#x7684;&#x56FE;&#x7247;&#x4E5F;&#x5C31;&#x662F;&#x6B63;&#x6837;&#x672C;&#xFF0C;&#x4E00;&#x8D77;&#x8BAD;&#x7EC3;Discriminator&#x505A;&#x4E8C;&#x5206;&#x7C7B;&#x7684;&#x6548;&#x679C;&#x6765;&#x5224;&#x65AD;&#x8C01;1&#x8C01;0&#x3002;<br>Generator&#x8981;&#x8FDB;&#x6B65;&#xFF0C;&#x8BAD;&#x7EC3;&#x597D;Discriminator&#x4E4B;&#x540E;&#xFF0C;&#x56FA;&#x5B9A;&#x4F4F;&#x5B83;&#x7684;&#x6743;&#x91CD;&#xFF0C;&#x8BAD;&#x7EC3;Generator&#xFF0C;&#x4F7F;&#x5F97;&#x539F;&#x672C;&#x88AB;&#x5224;&#x5B9A;&#x4E3A;&#x662F;&#x5047;&#x7684;&#x6982;&#x7387;&#x5F88;&#x5927;&#xFF08;&#x5982;0.05&#xFF09;&#x7684;&#x90A3;&#x4E9B;&#x5411;&#x91CF;&#x6700;&#x7EC8;&#x7ECF;&#x8FC7;Discriminator&#x5224;&#x5B9A;&#x8F93;&#x51FA;&#x7684;&#x7ED3;&#x679C;&#x662F;1&#xFF0C;&#x8FD9;&#x6837;Generator&#x5C31;&#x5B8C;&#x6210;&#x4E86;&#x4E00;&#x6B21;&#x66F4;&#x65B0;&#x3002;<br>&#x7136;&#x540E;&#xFF0C;&#x56FA;&#x5B9A;&#x4F4F;Generator&#x7684;&#x6743;&#x91CD;&#xFF0C;&#x518D;&#x751F;&#x6210;&#x4E00;&#x4E07;&#x5F20;&#x52A0;&#x56FE;&#x7247;&#xFF0C;&#x91CD;&#x590D;&#x4E0A;&#x8FF0;&#x8FC7;&#x7A0B;&#xFF0C;&#x5C31;&#x5F97;&#x5230;&#x4E86;&#x7B2C;&#x4E8C;&#x4EE3;&#x7684;Discriminator&#xFF0C;&#x4E4B;&#x540E;&#x518D;&#x56FA;&#x5B9A;&#x4F4F;Discriminator&#xFF0C;&#x53BB;&#x8BAD;&#x7EC3;Generator&#xFF0C;&#x5982;&#x6B64;&#x53CD;&#x590D;&#x4E0B;&#x53BB;&#x3002;&#x6700;&#x7EC8;&#x7684;&#x76EE;&#x7684;&#x662F;&#x5F97;&#x5230;&#x4E00;&#x4E2A;&#x6548;&#x679C;&#x5F88;&#x597D;&#x7684;Generator&#x3002;</p>
+<p><img src="/&#x673A;&#x5668;&#x5B66;&#x4E60;/&#x751F;&#x6210;&#x5BF9;&#x6297;&#x7F51;&#x7EDC;/GAN&#x6A21;&#x578B;&#x7ED3;&#x6784;.png" alt="logo"></p>
+<h2 id="&#x4E3A;&#x4EC0;&#x4E48;&#x8981;&#x4F7F;&#x7528;GAN"><a href="#&#x4E3A;&#x4EC0;&#x4E48;&#x8981;&#x4F7F;&#x7528;GAN" class="headerlink" title="&#x4E3A;&#x4EC0;&#x4E48;&#x8981;&#x4F7F;&#x7528;GAN"></a>&#x4E3A;&#x4EC0;&#x4E48;&#x8981;&#x4F7F;&#x7528;GAN</h2><p>&#x4ECE;&#x6570;&#x5B66;&#x4E0A;&#x6765;&#x8BB2;&#xFF0C;&#x5BF9;&#x4E8E;&#x4E00;&#x5F20;&#x771F;&#x5B9E;&#x4E16;&#x754C;&#x7684;&#x56FE;&#x7247; $ X $ &#xFF0C;&#x90FD;&#x6709;&#x4E00;&#x4E2A;&#x6982;&#x7387;&#x5206;&#x5E03; $ P{_{data}}(X) $&#xFF0C;&#x6BD4;&#x5982;&#x732B;&#x591A;&#x8FD8;&#x662F;&#x72D7;&#x591A;&#xFF0C;&#x540C;&#x65F6;&#xFF0C;&#x6211;&#x4EEC;&#x53EF;&#x4EE5;&#x6709;&#x4E00;&#x4E2A; $ &#x3B8; $ &#x63A7;&#x5236;&#x7684;&#x590D;&#x6742;&#x5206;&#x5E03;&#xFF08;&#x6BD4;&#x5982;&#x6DF7;&#x5408;&#x9AD8;&#x65AF;&#x6A21;&#x578B;GMM&#x751F;&#x6210;&#x7684;&#x5206;&#x5E03;&#xFF09;&#xFF0C;&#x90A3;&#x4E48;&#xFF0C;&#x751F;&#x6210;&#x6A21;&#x578B;&#x7684;&#x76EE;&#x7684;&#x5C31;&#x662F;&#x627E;&#x5230;&#x5408;&#x9002;&#x7684; $ &#x3B8; $ &#xFF0C;&#x4F7F;&#x5F97;&#x751F;&#x6210;&#x7684;&#x7ED3;&#x679C;&#x5206;&#x5E03;&#x548C;&#x539F;&#x59CB;&#x5206;&#x5E03;&#x6700;&#x63A5;&#x8FD1;&#x3002;</p>
+<p>&#x7531;&#x4E8E;&#x771F;&#x5B9E;&#x4E16;&#x754C;&#x4E2D;&#x7684;&#x6570;&#x636E;&#x662F;&#x65E0;&#x7A77;&#x591A;&#x7684;&#xFF0C;&#x6240;&#x4EE5;&#x53EF;&#x4EE5;&#x5BF9;&#x8FD9;&#x4E2A;&#x5B9E;&#x9645;&#x7684;&#x5206;&#x5E03;&#x505A;&#x91C7;&#x6837;&#xFF0C;&#x5F97;&#x5230;&#x7684;&#x8FD9;&#x4E9B;&#x6837;&#x672C;&#x53C8;&#x53EF;&#x4EE5;&#x6784;&#x6210;&#x4E00;&#x4E2A;&#x65B0;&#x7684;GMM&#x5206;&#x5E03;&#xFF0C;&#x6211;&#x4EEC;&#x5E0C;&#x671B; $ &#x3B8; $ &#x5728;&#x8FD9;&#x4EFD;&#x6837;&#x672C;&#x96C6;&#x4EA7;&#x751F;&#x7684;&#x5206;&#x5E03;&#x4E0A;&#x7684;&#x8868;&#x73B0;&#x80FD;&#x8FBE;&#x5230;&#x6700;&#x4F18;&#xFF0C;&#x5373;&#x4F3C;&#x7136;&#x6982;&#x7387; $ L = \prod_{i=i}^m P{_G}(x^i;&#x3B8;) $ &#x6700;&#x5927;&#xFF0C;&#x4E5F;&#x5C31;&#x662F;&#x8981;&#x6700;&#x5C0F;&#x5316;&#x8FD9;&#x4E2A;&#x5206;&#x5E03;&#x548C;&#x771F;&#x5B9E;&#x4E16;&#x754C;&#x5206;&#x5E03;&#x4E4B;&#x95F4;&#x7684;&#x6563;&#x5EA6;&#xFF0C;&#x5982;KL&#x6563;&#x5EA6;&#xFF0C;&#x5373; $ arg min{_&#x3B8;} KL(P{_{data}}(x)||P{_G}(x;&#x3B8;)) $ &#x3002;</p>
+<p>&#x8FD9;&#x4E2A;&#x6211;&#x4EEC;&#x8981;&#x9020;&#x51FA;&#x6765;&#x5206;&#x5E03;&#x5C31;&#x662F;Generator&#x4EA7;&#x51FA;&#x7684;&#x5206;&#x5E03;&#xFF0C;&#x7531;&#x4E8E;&#x53EA;&#x7528;GMM&#x7684;&#x8BDD;&#x63CF;&#x8FF0;&#x80FD;&#x529B;&#x4E0D;&#x591F;&#x5F3A;&#xFF0C;&#x6240;&#x4EE5;&#x53EF;&#x4EE5;&#x7528;&#x795E;&#x7ECF;&#x7F51;&#x7EDC;&#x3002;&#x795E;&#x7ECF;&#x7F51;&#x7EDC;&#x662F;&#x4E2A;&#x80FD;&#x628A;&#x4E00;&#x4E2A;&#x5411;&#x91CF;&#x6620;&#x5C04;&#x4E3A;&#x53E6;&#x4E00;&#x4E2A;&#x5411;&#x91CF;&#x7684;&#x6620;&#x5C04;&#xFF0C;&#x53EF;&#x4EE5;&#x8BA4;&#x4E3A;&#x5BF9;&#x67D0;&#x4E2A;&#x4EFB;&#x610F;&#x5206;&#x5E03; $ z $ &#xFF0C;&#x5B58;&#x5728;&#x4E00;&#x4E2A;&#x795E;&#x7ECF;&#x7F51;&#x7EDC;&#x7684;&#x53D8;&#x6362; $ G(z)=x $&#xFF0C;&#x4F7F;&#x5F97;&#x751F;&#x6210;&#x7684;&#x5206;&#x5E03; $ P{_G}(x;&#x3B8;) $ &#x548C;&#x771F;&#x5B9E;&#x4E16;&#x754C;&#x7684; $ P{_{data}}(x;&#x3B8;) $ &#x6700;&#x63A5;&#x8FD1;&#x3002;&#x7531;&#x4E8E;&#x795E;&#x7ECF;&#x7F51;&#x7EDC;&#x5F88;&#x590D;&#x6742;&#xFF0C;&#x5F88;&#x591A;&#x7684; $ z $ &#x90FD;&#x80FD;&#x751F;&#x6210; $ x $&#xFF0C;&#x6240;&#x4EE5;&#x4E0D;&#x80FD;&#x76F4;&#x63A5;&#x4ECE;&#x6570;&#x5B66;&#x4E0A;&#x6C42;&#x89E3;KL&#x6563;&#x5EA6;&#xFF0C;&#x56E0;&#x4E3A;&#x6CA1;&#x6CD5;&#x628A;&#x8FD9;&#x4E9B; $ z $ &#x90FD;&#x62FF;&#x51FA;&#x6765;&#x505A;&#x79EF;&#x5206; $ P{_G}(X) = \int P{_{prior}}(z)I{_{[G(z)=x]}} dz $ &#x3002;</p>
+<p><img src="/&#x673A;&#x5668;&#x5B66;&#x4E60;/&#x751F;&#x6210;&#x5BF9;&#x6297;&#x7F51;&#x7EDC;/GAN&#x6A21;&#x62DF;&#x5206;&#x5E03;.png" alt="logo"></p>
+<h2 id="GAN&#x7684;&#x6570;&#x5B66;&#x539F;&#x7406;"><a href="#GAN&#x7684;&#x6570;&#x5B66;&#x539F;&#x7406;" class="headerlink" title="GAN&#x7684;&#x6570;&#x5B66;&#x539F;&#x7406;"></a>GAN&#x7684;&#x6570;&#x5B66;&#x539F;&#x7406;</h2><p>&#x5BF9;&#x4E8E;GAN&#xFF0C;&#x6574;&#x4E2A;&#x795E;&#x7ECF;&#x7F51;&#x7EDC;&#x5206;&#x4E3A;&#x524D;&#x540E;&#x4E24;&#x90E8;&#x5206;&#xFF0C;&#x524D;&#x534A;&#x90E8;&#x5206;&#x7684;Generator&#x4F1A;&#x4ECE;&#x5148;&#x9A8C;&#x5206;&#x5E03; $ P{_{prior}}(z) $ &#x4E2D;&#x4EA7;&#x751F;&#x51FA;&#x5206;&#x5E03; $ z $ &#xFF0C;&#x751F;&#x6210;&#x5411;&#x91CF; $ x $ &#xFF0C;$ x $ &#x7684;&#x5206;&#x5E03;&#x4E3A; $ P{_G}(x) $ &#xFF1B;&#x540E;&#x534A;&#x90E8;&#x5206;&#x7684;Discriminator&#x8F93;&#x5165;&#x5411;&#x91CF; $ x $ &#xFF0C;&#x8F93;&#x51FA;&#x4E00;&#x4E2A;&#x503C;&#xFF0C;&#x7528;&#x4E8E;&#x8BC4;&#x4F30; $ P{_G}(x) $ &#x548C; $ P{_{data}}(z) $ &#x7684;&#x5DEE;&#x5F02;&#xFF0C;GAN&#x7684;&#x7ED3;&#x679C;&#x5E76;&#x4E0D;&#x662F;&#x901A;&#x8FC7;loss&#x7684;&#x5927;&#x5C0F;&#x6765;&#x8BC4;&#x4F30;&#x7684;&#xFF0C;&#x56E0;&#x4E3A;&#x65E0;&#x8BBA;&#x5982;&#x4F55;&#x5B83;&#x90FD;&#x4F1A;&#x8D8B;&#x4E8E;0&#xFF0C;GAN&#x5F53;&#x4E2D;&#x5DEE;&#x5F02;&#x5EA6;&#x53EB;&#x505A; $ V(G,D) $&#x3002;</p>
+<p>&#x5BF9;&#x4E8E;&#x4E0D;&#x540C;&#x7684;GAN&#xFF0C;&#x6709;&#x4E0D;&#x540C;&#x7684; $ V(G,D) $ &#x51FD;&#x6570;&#x5B9A;&#x4E49;&#x65B9;&#x5F0F;&#xFF0C;&#x6548;&#x679C;&#x6700;&#x597D;&#x7684;Generator&#x6EE1;&#x8DB3; $ G^* = arg min{_G} max{_D} V(G,D) $ &#x3002;</p>
+<p>&#x9996;&#x5148;&#x6211;&#x4EEC;&#x4F1A;&#x6709;&#x591A;&#x4E2A;&#x751F;&#x6210;&#x5668; $ G $ &#xFF0C;&#x5BF9;&#x4E8E;&#x6BCF;&#x4E2A;&#x56FA;&#x5B9A;&#x7684;&#x751F;&#x6210;&#x5668; $ G{_i} $ &#xFF0C;&#x628A;&#x5B83;&#x770B;&#x505A;&#x5E38;&#x91CF;&#xFF0C;&#x4F1A;&#x6709;&#x591A;&#x4E2A;&#x5BF9;&#x5E94;&#x7684;&#x5224;&#x522B;&#x5668; $ D $ &#x7ED9;&#x5B83;&#x4F5C;&#x8BC4;&#x4EF7;&#xFF0C;&#x4EE5; $ D $ &#x4F5C;&#x4E3A;&#x53D8;&#x91CF;&#xFF0C;&#x4F1A;&#x5F97;&#x5230;&#x591A;&#x4E2A;&#x51FD;&#x6570; $ V(G{_i}, D) = f{_i}(D) $ &#xFF0C;&#x90A3;&#x4E48;&#x6BCF;&#x4E2A; $ G{_i} $ &#x5BF9;&#x5E94;&#x7684;&#x51FD;&#x6570; $ f{_i} $ &#x90FD;&#x80FD;&#x627E;&#x5230;&#x4F7F;&#x5F97;&#x5176;&#x51FD;&#x6570;&#x503C;&#x6700;&#x5927;&#x7684;&#x90A3;&#x4E2A; $ D $ &#xFF0C;&#x8FD9;&#x4E9B;&#x6700;&#x5927;&#x7684; $ V $ &#x51FD;&#x6570;&#x503C;&#x6784;&#x6210;&#x4E86;&#x4E00;&#x4E2A;&#x96C6;&#x5408;&#xFF0C;&#x627E;&#x5230;&#x8FD9;&#x4E2A;&#x96C6;&#x5408;&#x4E2D; $ V $ &#x503C;&#x6700;&#x5C0F;&#x7684;&#x4E00;&#x4E2A; $ f $ &#xFF0C;&#x518D;&#x627E;&#x51FA;&#x5176;&#x5BF9;&#x5E94;&#x7684; $ G{_i} $&#xFF0C;&#x5373;&#x6700;&#x4F18;&#x7684;&#x751F;&#x6210;&#x5668;&#x3002;</p>
+<p>&#x5176;&#x4E2D;&#x4E00;&#x4E2A; $ V(G,D) $ &#x7684;&#x5F62;&#x5F0F;&#x662F;&#xFF1A;<br>$ V = E{_{x \sim P{_{data}}}}[logD(x)] + E{_{x \sim P{_G}}}[log(1-D(x))] $</p>
+<p>&#x76F4;&#x89C2;&#x7684;&#x7406;&#x89E3;&#x662F;&#xFF0C;&#x5BF9;&#x4E8E;&#x771F;&#x5B9E;&#x4E16;&#x754C;&#x4E2D;&#x91C7;&#x6837;&#x51FA;&#x6765;&#x7684; $ x $ &#xFF0C;&#x5BF9; $ logD(x) $ &#x6C42;&#x6570;&#x5B66;&#x671F;&#x671B;&#xFF0C;&#x7136;&#x540E;&#x5BF9;&#x751F;&#x6210;&#x5668;&#x4EA7;&#x51FA;&#x7684; $ x $ &#xFF0C;&#x5BF9; $ log(1-D(x)) $ &#x6C42;&#x6570;&#x5B66;&#x671F;&#x671B;&#x3002;&#x53EF;&#x4EE5;&#x770B;&#x51FA;&#x5B83;&#x662F; $ G $ &#x548C; $ D $ &#x7684;&#x51FD;&#x6570;&#x3002;</p>
+<p>&#x8FD9;&#x4E2A;&#x516C;&#x5F0F;&#x7B49;&#x4EF7;&#x4E8E;&#x79EF;&#x5206;&#xFF1A;<br>$ V = \int_x [ P{_{data}}(x)logD(x) + P{_G}(x)log(1-D(x)) ] dx $</p>
+<p>&#x56E0;&#x4E3A;&#x8FD9;&#x4E2A;&#x79EF;&#x5206;&#x6CA1;&#x6CD5;&#x76F4;&#x63A5;&#x6C42;&#xFF0C;&#x95EE;&#x9898;&#x5C31;&#x8F6C;&#x5316;&#x6210;&#x627E;&#x5230;&#x6700;&#x597D;&#x7684; $ D(x) $ &#xFF0C;&#x4F7F;&#x5F97;<br>$ P{_{data}}(x)logD(x) + P{_G}(x)log(1-D(x)) $<br>&#x8FD9;&#x4E00;&#x5768;&#x79EF;&#x5206;&#x91CC;&#x9762;&#x7684;&#x4E1C;&#x897F;&#x6700;&#x5927;&#x3002;</p>
+<p>&#x56E0;&#x4E3A; $ P{_{data}}(x) $ &#x548C; $ P{_G}(x) $ &#x5206;&#x522B;&#x662F;&#x53EF;&#x77E5;&#x7684;&#x73B0;&#x5B9E;&#x4E16;&#x754C;&#x548C;&#x751F;&#x6210;&#x5668;&#x7684;&#x5206;&#x5E03;&#xFF0C;&#x6240;&#x4EE5;&#x5B9A;&#x4E49;&#x4E3A;&#x5E38;&#x91CF; $ a $ &#x548C; $ b $&#xFF0C;&#x53EF;&#x4EE5;&#x52A8;&#x7684;&#x53EA;&#x6709; $ D $ &#x3002;&#x5373;&#x6700;&#x5927;&#x5316;<br>$ f(D) = a * log(D) + b * log(1-D) $<br>&#x6240;&#x4EE5;&#x6C42;&#x5BFC;&#x5F97;0&#xFF0C;&#x5F97;&#x5230; $ D^{*} = \frac {a}{a + b} $<br>&#x5373; $ D^{*} = \frac {P{_{data}}(x)}{P{_{data}}(x) + P{_G}(x)} $<br>&#x8FD9;&#x4E2A;&#x7ED3;&#x679C;&#x663E;&#x7136;&#x5728;0&#x5230;1&#x4E4B;&#x95F4;&#xFF0C;&#x8FD9;&#x5F88;&#x7B26;&#x5408;&#x5206;&#x7C7B;&#x5668;&#x8F93;&#x51FA;&#x4E00;&#x4E2A;&#x6982;&#x7387;&#x7684;&#x7279;&#x70B9;&#x3002;</p>
+<p>&#x8FD9;&#x4E2A;&#x70B9;&#xFF0C;&#x6070;&#x597D;&#x5C31;&#x662F;&#x524D;&#x9762;&#x63D0;&#x5230;&#x7684;&#x201C;&#x6BCF;&#x4E2A; $ G{_i} $ &#x5BF9;&#x5E94;&#x7684;&#x51FD;&#x6570; $ f{_i} $ &#xFF0C;&#x4F7F;&#x5F97;&#x5176;&#x51FD;&#x6570;&#x503C;&#x6700;&#x5927;&#x7684;&#x90A3;&#x4E2A; $ D $ &#x201D;&#x3002;</p>
+<p><img src="/&#x673A;&#x5668;&#x5B66;&#x4E60;/&#x751F;&#x6210;&#x5BF9;&#x6297;&#x7F51;&#x7EDC;/GAN&#x5BFB;&#x627E;&#x978D;&#x70B9;.png" alt="logo"></p>
+<p>&#x628A;&#x8FD9;&#x4E2A; $ D^{*} $ &#x5E26;&#x5165; $ V(G,D) $ &#xFF0C;&#x80FD;&#x62FF;&#x5230;&#x5185;&#x90E8;&#x6700;&#x5927;&#x7684; $ max{_D} V(G,D) $&#xFF0C;&#x5E76;&#x4E14;&#x6539;&#x9020;&#x516C;&#x5F0F;&#xFF0C;&#x5373;&#x5F97;&#x5230;&#xFF1A;<br>$ -2log2 + \int_x P{_{data}}(x)log(\frac {P{_{data}}(x)}{(P{_{data}}(x) + P{_G}(x))/2})dx + \int_x P{_G}(x)log(\frac {P{_{G}}(x)}{(P{_{data}}(x) + P{_G}(x))/2})dx $<br>&#x8FD9;&#x4E2A;&#x7ED3;&#x679C;&#x5C31;&#x76F8;&#x5F53;&#x4E8E;&#x4E24;&#x4E2A;KL&#x6563;&#x5EA6;&#xFF1A;<br>$ -2log2 - KL(P{_{data}} || \frac{P{_{data}}(x) + P{_G}(x)}{2} ) + KL(P{_G} || \frac{P{_{data}}(x) + P{_G}(x)}{2} ) $<br>KL&#x662F;&#x975E;&#x5BF9;&#x79F0;&#x6563;&#x5EA6;&#xFF0C;&#x8FD9;&#x4E2A;&#x516C;&#x5F0F;&#x7B49;&#x4EF7;&#x4E8E;&#x4E00;&#x4E2A;&#x5BF9;&#x79F0;&#x7684;JS&#x6563;&#x5EA6;&#xFF1A;<br>$ -2log2 + 2JSD(P{_{data}(x)}||P{_G}(x)) $<br>&#x5176;&#x4E2D;JS&#x6563;&#x5EA6;&#x5728;0&#x5230;log2&#x4E4B;&#x95F4;&#xFF0C;&#x5982;&#x679C;&#x4E24;&#x4E2A;&#x5206;&#x5E03;&#x4E00;&#x6837;&#x5C31;&#x662F;0&#x3002;</p>
+<p>&#x6240;&#x4EE5;&#x8BF4; $ V(G,D) $ &#x4E4B;&#x6240;&#x4EE5;&#x8FD9;&#x6837;&#x5B9A;&#x4E49;&#xFF0C;&#x5C31;&#x662F;&#x4E3A;&#x4E86;&#x80FD;&#x628A;&#x95EE;&#x9898;&#x8F6C;&#x5316;&#x4E3A;&#x6C42;&#x4E24;&#x4E2A;&#x5206;&#x5E03;&#x7684;JS&#x6563;&#x5EA6;&#xFF0C;&#x8FD9;&#x91CC;&#x6211;&#x4EEC;&#x5148;&#x627E;&#x5230;&#x4E86;&#x6700;&#x597D;&#x7684;&#x5206;&#x7C7B;&#x5668; $ D^{*} $ &#x3002;&#x4E8B;&#x60C5;&#x7ED3;&#x675F;&#x4E86;&#x4E00;&#x534A;&#xFF0C;&#x4E4B;&#x540E;&#x8981;&#x627E;&#x5230;&#x4E00;&#x4E2A;&#x751F;&#x6210;&#x5668;&#xFF0C;&#x80FD;&#x628A;&#x4E24;&#x4E2A;&#x5206;&#x5E03;&#x5DEE;&#x5F02;&#x6700;&#x5C0F;&#x5316;&#xFF0C;&#x8FD9;&#x662F;&#x4E2A;&#x68AF;&#x5EA6;&#x4E0B;&#x964D;&#x7684;&#x8FC7;&#x7A0B;&#xFF0C;&#x4F46;&#x662F;&#x56E0;&#x4E3A; $ G^{*} = arg min{_G} max{_D} V(G,D) $ &#x5B58;&#x5728;max&#x64CD;&#x4F5C;&#xFF0C;&#x6240;&#x4EE5;&#x9700;&#x8981;&#x5206;&#x6BB5;&#x68AF;&#x5EA6;&#x4E0B;&#x964D;&#x8C03;&#x53C2;&#x3002;</p>
+<p>&#x4ECE;&#x6574;&#x4E2A;&#x8FC7;&#x7A0B;&#x6765;&#x770B;&#xFF0C;&#x6211;&#x4EEC;&#x6709;&#x4E00;&#x4E2A; $ G{_0} $ &#xFF0C;&#x7B97;&#x5F97;&#x4E86;&#x4E00;&#x4E2A; $ D{_0}^{*} $ &#xFF0C;&#x901A;&#x8FC7;&#x68AF;&#x5EA6;&#x4E0B;&#x964D;&#x62FF;&#x5230;&#x4E86; $ G{_1} $ &#xFF0C;&#x4E4B;&#x540E;&#x518D;&#x627E;&#x5230; $ D{_1}^{*} $ &#xFF0C;&#x68AF;&#x5EA6;&#x4E0B;&#x964D;&#x5F97;&#x5230; $ G{_2} $ &#xFF0C;&#x53CD;&#x590D;&#x8FED;&#x4EE3;&#x4E0B;&#x53BB;&#xFF0C;&#x5C31;&#x80FD;&#x5F97;&#x5230;&#x4E00;&#x4E2A;&#x7406;&#x60F3;&#x7684; $ G $ &#x3002;</p>
+<p>&#x5BF9;&#x4E8E;&#x524D;&#x9762;&#x516C;&#x5F0F;&#x4E2D;&#x7684;&#x79EF;&#x5206;&#xFF0C;&#x7531;&#x4E8E;&#x53D6;&#x4E0D;&#x5230;&#x6574;&#x4E2A;&#x73B0;&#x5B9E;&#x4E2D;&#x7684;&#x6837;&#x672C;&#x6CA1;&#x6CD5;&#x505A;&#x79EF;&#x5206;&#xFF0C;&#x6240;&#x4EE5;&#x8F6C;&#x5316;&#x4E3A;&#x79BB;&#x6563;&#x95EE;&#x9898;&#xFF0C;&#x4F1A;&#x5206;&#x522B;&#x4ECE;&#x73B0;&#x5B9E;&#x4E16;&#x754C;&#x548C;&#x751F;&#x6210;&#x56FE;&#x7247;&#x4E2D;&#x91C7;&#x6837;&#x51FA;&#x5F88;&#x591A;&#x56FE;&#x7247;&#xFF0C;&#x6240;&#x4EE5; $ V $ &#x51FD;&#x6570;&#x5C31;&#x8F6C;&#x5316;&#x4E3A;&#x4E86;&#x901A;&#x8FC7; $ m $ &#x4E2A;&#x6837;&#x672C;&#x53BB;&#x62DF;&#x5408;&#x8FD9;&#x4E2A;&#x79EF;&#x5206;&#x3002;&#x90A3;&#x4E48; $ V $ &#x7684;&#x79BB;&#x6563;&#x7248;&#x672C;&#x5C31;&#x662F;&#x6700;&#x5C0F;&#x5316;&#xFF1A;<br>$ \tilde{V} = - \frac{1}{m} \sum_{i=1}^m logD(\tilde{x}^i) - \frac{1}{m} \sum_{i=1}^m log(1-D(\tilde{x}^i)) $<br>&#x5982;&#x679C;&#x73B0;&#x5B9E;&#x4E16;&#x754C;&#x7684;&#x6570;&#x636E;&#x662F;&#x6B63;&#x6837;&#x672C;&#xFF0C;&#x751F;&#x6210;&#x7684;&#x6837;&#x672C;&#x662F;&#x8D1F;&#x6837;&#x672C;&#xFF0C;&#x4ECE;&#x516C;&#x5F0F;&#x4E0A;&#x6765;&#x770B;&#xFF0C;&#x5B9E;&#x9645;&#x4E0A;&#x5C31;&#x662F;&#x5728;&#x6700;&#x5C0F;&#x5316;&#x4E8C;&#x5206;&#x7C7B;&#x5668;&#x7684;&#x4EA4;&#x53C9;&#x71B5;&#x635F;&#x5931;&#x51FD;&#x6570;&#x3002;</p>
+<p>&#x5728;&#x5B9E;&#x9645;&#x5E94;&#x7528;&#x5F53;&#x4E2D;&#xFF0C;&#x7531;&#x4E8E; $ log(1-D(x)) $ &#x5728;&#x521D;&#x59CB;&#x70B9;&#x659C;&#x7387;&#x5F88;&#x5C0F;&#xFF0C;&#x5F88;&#x96BE;&#x8BAD;&#x7EC3;&#xFF0C;&#x6240;&#x4EE5;&#x90FD;&#x4F7F;&#x7528;&#x5355;&#x8C03;&#x6027;&#x4E00;&#x81F4;&#x7684; $ -log(D(x)) $ &#x7684;&#x5F62;&#x5F0F;&#x6765;&#x4F18;&#x5316;&#xFF0C;&#x5B83;&#x5728;&#x521D;&#x59CB;&#x70B9;&#x659C;&#x7387;&#x6781;&#x5927;&#x3002;</p>
+<h2 id="&#x6DF1;&#x5EA6;&#x5377;&#x79EF;&#x751F;&#x6210;&#x5BF9;&#x6297;&#x7F51;&#x7EDC;&#xFF08;DCGAN&#xFF09;&#x7684;Kears&#x4EE3;&#x7801;&#x5B9E;&#x73B0;"><a href="#&#x6DF1;&#x5EA6;&#x5377;&#x79EF;&#x751F;&#x6210;&#x5BF9;&#x6297;&#x7F51;&#x7EDC;&#xFF08;DCGAN&#xFF09;&#x7684;Kears&#x4EE3;&#x7801;&#x5B9E;&#x73B0;" class="headerlink" title="&#x6DF1;&#x5EA6;&#x5377;&#x79EF;&#x751F;&#x6210;&#x5BF9;&#x6297;&#x7F51;&#x7EDC;&#xFF08;DCGAN&#xFF09;&#x7684;Kears&#x4EE3;&#x7801;&#x5B9E;&#x73B0;"></a>&#x6DF1;&#x5EA6;&#x5377;&#x79EF;&#x751F;&#x6210;&#x5BF9;&#x6297;&#x7F51;&#x7EDC;&#xFF08;DCGAN&#xFF09;&#x7684;Kears&#x4EE3;&#x7801;&#x5B9E;&#x73B0;</h2><p>&#x73B0;&#x5728;&#x5F88;&#x7D2F;&#xFF0C;&#x5F88;&#x5FEB;&#x66F4;&#x65B0;&#x2026;</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+
+    <footer class="post-footer">
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/机器学习/利用卷积神经网络实现图片多分类/" rel="next" title="利用卷积神经网络实现图片多分类">
+                <i class="fa fa-chevron-left"></i> 利用卷积神经网络实现图片多分类
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/icon.jpeg"
+               alt="アカリ" />
+          <p class="site-author-name" itemprop="name">アカリ</p>
+          <p class="site-description motion-element" itemprop="description">很羡慕工作后辞职读研的人，能腾出一两年的大片时间来专心学习某个自己喜欢的领域的知识技能其实是一件非常幸福的事……</p>
+        </div>
+        <nav class="site-state motion-element">
+        
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/">
+                <span class="site-state-item-count">18</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">3</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#神经网络的无监督学习"><span class="nav-number">1.</span> <span class="nav-text">神经网络的无监督学习</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#GAN的结构"><span class="nav-number">2.</span> <span class="nav-text">GAN的结构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#为什么要使用GAN"><span class="nav-number">3.</span> <span class="nav-text">为什么要使用GAN</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#GAN的数学原理"><span class="nav-number">4.</span> <span class="nav-text">GAN的数学原理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#深度卷积生成对抗网络（DCGAN）的Kears代码实现"><span class="nav-number">5.</span> <span class="nav-text">深度卷积生成对抗网络（DCGAN）的Kears代码实现</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">アカリ</span>
+</div>
+
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.0"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.0"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=default"></script>
+  
+
+
+  
+
+  
+
+  
+
+
+</body>
+</html>
