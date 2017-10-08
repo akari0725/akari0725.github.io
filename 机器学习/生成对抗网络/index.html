@@ -94,7 +94,7 @@
 <meta property="og:image" content="http://yoursite.com/机器学习/生成对抗网络/GAN模型结构.png">
 <meta property="og:image" content="http://yoursite.com/机器学习/生成对抗网络/GAN模拟分布.png">
 <meta property="og:image" content="http://yoursite.com/机器学习/生成对抗网络/GAN寻找鞍点.png">
-<meta property="og:updated_time" content="2017-07-20T14:44:12.000Z">
+<meta property="og:updated_time" content="2017-07-21T14:32:51.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="生成对抗网络">
 <meta name="twitter:description" content="神经网络不光可以用来做有监督的分类，也可以用来做无监督的生成，比如图像生成，而所谓对抗则是一种反复训练生成器和判别器的过程使得二者在相互促进的过程当中让生成器达到最优。这篇文章笔记一下GAN的原理和实现。">
@@ -381,7 +381,7 @@
 <p>&#x4ECE;&#x6574;&#x4E2A;&#x8FC7;&#x7A0B;&#x6765;&#x770B;&#xFF0C;&#x6211;&#x4EEC;&#x6709;&#x4E00;&#x4E2A; $ G{_0} $ &#xFF0C;&#x7B97;&#x5F97;&#x4E86;&#x4E00;&#x4E2A; $ D{_0}^{*} $ &#xFF0C;&#x901A;&#x8FC7;&#x68AF;&#x5EA6;&#x4E0B;&#x964D;&#x62FF;&#x5230;&#x4E86; $ G{_1} $ &#xFF0C;&#x4E4B;&#x540E;&#x518D;&#x627E;&#x5230; $ D{_1}^{*} $ &#xFF0C;&#x68AF;&#x5EA6;&#x4E0B;&#x964D;&#x5F97;&#x5230; $ G{_2} $ &#xFF0C;&#x53CD;&#x590D;&#x8FED;&#x4EE3;&#x4E0B;&#x53BB;&#xFF0C;&#x5C31;&#x80FD;&#x5F97;&#x5230;&#x4E00;&#x4E2A;&#x7406;&#x60F3;&#x7684; $ G $ &#x3002;</p>
 <p>&#x5BF9;&#x4E8E;&#x524D;&#x9762;&#x516C;&#x5F0F;&#x4E2D;&#x7684;&#x79EF;&#x5206;&#xFF0C;&#x7531;&#x4E8E;&#x53D6;&#x4E0D;&#x5230;&#x6574;&#x4E2A;&#x73B0;&#x5B9E;&#x4E2D;&#x7684;&#x6837;&#x672C;&#x6CA1;&#x6CD5;&#x505A;&#x79EF;&#x5206;&#xFF0C;&#x6240;&#x4EE5;&#x8F6C;&#x5316;&#x4E3A;&#x79BB;&#x6563;&#x95EE;&#x9898;&#xFF0C;&#x4F1A;&#x5206;&#x522B;&#x4ECE;&#x73B0;&#x5B9E;&#x4E16;&#x754C;&#x548C;&#x751F;&#x6210;&#x56FE;&#x7247;&#x4E2D;&#x91C7;&#x6837;&#x51FA;&#x5F88;&#x591A;&#x56FE;&#x7247;&#xFF0C;&#x6240;&#x4EE5; $ V $ &#x51FD;&#x6570;&#x5C31;&#x8F6C;&#x5316;&#x4E3A;&#x4E86;&#x901A;&#x8FC7; $ m $ &#x4E2A;&#x6837;&#x672C;&#x53BB;&#x62DF;&#x5408;&#x8FD9;&#x4E2A;&#x79EF;&#x5206;&#x3002;&#x90A3;&#x4E48; $ V $ &#x7684;&#x79BB;&#x6563;&#x7248;&#x672C;&#x5C31;&#x662F;&#x6700;&#x5C0F;&#x5316;&#xFF1A;<br>$ \tilde{V} = - \frac{1}{m} \sum_{i=1}^m logD(\tilde{x}^i) - \frac{1}{m} \sum_{i=1}^m log(1-D(\tilde{x}^i)) $<br>&#x5982;&#x679C;&#x73B0;&#x5B9E;&#x4E16;&#x754C;&#x7684;&#x6570;&#x636E;&#x662F;&#x6B63;&#x6837;&#x672C;&#xFF0C;&#x751F;&#x6210;&#x7684;&#x6837;&#x672C;&#x662F;&#x8D1F;&#x6837;&#x672C;&#xFF0C;&#x4ECE;&#x516C;&#x5F0F;&#x4E0A;&#x6765;&#x770B;&#xFF0C;&#x5B9E;&#x9645;&#x4E0A;&#x5C31;&#x662F;&#x5728;&#x6700;&#x5C0F;&#x5316;&#x4E8C;&#x5206;&#x7C7B;&#x5668;&#x7684;&#x4EA4;&#x53C9;&#x71B5;&#x635F;&#x5931;&#x51FD;&#x6570;&#x3002;</p>
 <p>&#x5728;&#x5B9E;&#x9645;&#x5E94;&#x7528;&#x5F53;&#x4E2D;&#xFF0C;&#x7531;&#x4E8E; $ log(1-D(x)) $ &#x5728;&#x521D;&#x59CB;&#x70B9;&#x659C;&#x7387;&#x5F88;&#x5C0F;&#xFF0C;&#x5F88;&#x96BE;&#x8BAD;&#x7EC3;&#xFF0C;&#x6240;&#x4EE5;&#x90FD;&#x4F7F;&#x7528;&#x5355;&#x8C03;&#x6027;&#x4E00;&#x81F4;&#x7684; $ -log(D(x)) $ &#x7684;&#x5F62;&#x5F0F;&#x6765;&#x4F18;&#x5316;&#xFF0C;&#x5B83;&#x5728;&#x521D;&#x59CB;&#x70B9;&#x659C;&#x7387;&#x6781;&#x5927;&#x3002;</p>
-<h2 id="&#x6DF1;&#x5EA6;&#x5377;&#x79EF;&#x751F;&#x6210;&#x5BF9;&#x6297;&#x7F51;&#x7EDC;&#xFF08;DCGAN&#xFF09;&#x7684;Kears&#x4EE3;&#x7801;&#x5B9E;&#x73B0;"><a href="#&#x6DF1;&#x5EA6;&#x5377;&#x79EF;&#x751F;&#x6210;&#x5BF9;&#x6297;&#x7F51;&#x7EDC;&#xFF08;DCGAN&#xFF09;&#x7684;Kears&#x4EE3;&#x7801;&#x5B9E;&#x73B0;" class="headerlink" title="&#x6DF1;&#x5EA6;&#x5377;&#x79EF;&#x751F;&#x6210;&#x5BF9;&#x6297;&#x7F51;&#x7EDC;&#xFF08;DCGAN&#xFF09;&#x7684;Kears&#x4EE3;&#x7801;&#x5B9E;&#x73B0;"></a>&#x6DF1;&#x5EA6;&#x5377;&#x79EF;&#x751F;&#x6210;&#x5BF9;&#x6297;&#x7F51;&#x7EDC;&#xFF08;DCGAN&#xFF09;&#x7684;Kears&#x4EE3;&#x7801;&#x5B9E;&#x73B0;</h2><p>&#x73B0;&#x5728;&#x5F88;&#x7D2F;&#xFF0C;&#x5F88;&#x5FEB;&#x66F4;&#x65B0;&#x2026;</p>
+<h2 id="&#x6DF1;&#x5EA6;&#x5377;&#x79EF;&#x751F;&#x6210;&#x5BF9;&#x6297;&#x7F51;&#x7EDC;&#xFF08;DCGAN&#xFF09;&#x7684;Keras&#x4EE3;&#x7801;&#x5B9E;&#x73B0;"><a href="#&#x6DF1;&#x5EA6;&#x5377;&#x79EF;&#x751F;&#x6210;&#x5BF9;&#x6297;&#x7F51;&#x7EDC;&#xFF08;DCGAN&#xFF09;&#x7684;Keras&#x4EE3;&#x7801;&#x5B9E;&#x73B0;" class="headerlink" title="&#x6DF1;&#x5EA6;&#x5377;&#x79EF;&#x751F;&#x6210;&#x5BF9;&#x6297;&#x7F51;&#x7EDC;&#xFF08;DCGAN&#xFF09;&#x7684;Keras&#x4EE3;&#x7801;&#x5B9E;&#x73B0;"></a>&#x6DF1;&#x5EA6;&#x5377;&#x79EF;&#x751F;&#x6210;&#x5BF9;&#x6297;&#x7F51;&#x7EDC;&#xFF08;DCGAN&#xFF09;&#x7684;Keras&#x4EE3;&#x7801;&#x5B9E;&#x73B0;</h2><p>&#x73B0;&#x5728;&#x5F88;&#x7D2F;&#xFF0C;&#x5F88;&#x5FEB;&#x66F4;&#x65B0;&#x2026;</p>
 
       
     </div>
@@ -486,7 +486,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/">
-                <span class="site-state-item-count">18</span>
+                <span class="site-state-item-count">17</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -532,7 +532,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#神经网络的无监督学习"><span class="nav-number">1.</span> <span class="nav-text">神经网络的无监督学习</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#GAN的结构"><span class="nav-number">2.</span> <span class="nav-text">GAN的结构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#为什么要使用GAN"><span class="nav-number">3.</span> <span class="nav-text">为什么要使用GAN</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#GAN的数学原理"><span class="nav-number">4.</span> <span class="nav-text">GAN的数学原理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#深度卷积生成对抗网络（DCGAN）的Kears代码实现"><span class="nav-number">5.</span> <span class="nav-text">深度卷积生成对抗网络（DCGAN）的Kears代码实现</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#神经网络的无监督学习"><span class="nav-number">1.</span> <span class="nav-text">神经网络的无监督学习</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#GAN的结构"><span class="nav-number">2.</span> <span class="nav-text">GAN的结构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#为什么要使用GAN"><span class="nav-number">3.</span> <span class="nav-text">为什么要使用GAN</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#GAN的数学原理"><span class="nav-number">4.</span> <span class="nav-text">GAN的数学原理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#深度卷积生成对抗网络（DCGAN）的Keras代码实现"><span class="nav-number">5.</span> <span class="nav-text">深度卷积生成对抗网络（DCGAN）的Keras代码实现</span></a></li></ol></div>
             
 
           </div>
