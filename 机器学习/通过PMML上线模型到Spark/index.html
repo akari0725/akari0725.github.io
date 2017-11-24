@@ -1,0 +1,697 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.0" />
+
+
+
+
+
+
+<meta name="description" content="sklearn和knime之类的软件生成的机器学习模型拿到Spark环境重新开发一遍可能极为复杂，一个解决方案是导出pmml并在Spark环境导入，让Spark把pmml解释为一个ETL任务，然而Spark到2.2了本身也只支持导出而不能导入pmml，这就需要一个库，这里记录这个库的坑和用法。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="通过PMML上线模型到Spark">
+<meta property="og:url" content="http://yoursite.com/机器学习/通过PMML上线模型到Spark/index.html">
+<meta property="og:site_name" content="アカリの部屋">
+<meta property="og:description" content="sklearn和knime之类的软件生成的机器学习模型拿到Spark环境重新开发一遍可能极为复杂，一个解决方案是导出pmml并在Spark环境导入，让Spark把pmml解释为一个ETL任务，然而Spark到2.2了本身也只支持导出而不能导入pmml，这就需要一个库，这里记录这个库的坑和用法。">
+<meta property="og:updated_time" content="2017-11-24T06:34:14.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="通过PMML上线模型到Spark">
+<meta name="twitter:description" content="sklearn和knime之类的软件生成的机器学习模型拿到Spark环境重新开发一遍可能极为复杂，一个解决方案是导出pmml并在Spark环境导入，让Spark把pmml解释为一个ETL任务，然而Spark到2.2了本身也只支持导出而不能导入pmml，这就需要一个库，这里记录这个库的坑和用法。">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/机器学习/通过PMML上线模型到Spark/"/>
+
+
+
+
+
+  <title> 通过PMML上线模型到Spark | アカリの部屋 </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">アカリの部屋</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+    
+      <p class="site-subtitle"></p>
+    
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-links">
+          <a href="/links" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
+            
+            友链
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+  <link itemprop="mainEntityOfPage" href="http://yoursite.com/机器学习/通过PMML上线模型到Spark/">
+
+  <span style="display:none" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <meta itemprop="name" content="アカリ">
+    <meta itemprop="description" content="">
+    <meta itemprop="image" content="/images/icon.jpeg">
+  </span>
+
+  <span style="display:none" itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+    <meta itemprop="name" content="アカリの部屋">
+    <span style="display:none" itemprop="logo" itemscope itemtype="http://schema.org/ImageObject">
+      <img style="display:none;" itemprop="url image" alt="アカリの部屋" src="">
+    </span>
+  </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                通过PMML上线模型到Spark
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-11-24T13:30:00+08:00">
+                2017-11-24
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/机器学习/" itemprop="url" rel="index">
+                    <span itemprop="name">机器学习</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+          
+
+          
+              <div class="post-description">
+                  sklearn和knime之类的软件生成的机器学习模型拿到Spark环境重新开发一遍可能极为复杂，一个解决方案是导出pmml并在Spark环境导入，让Spark把pmml解释为一个ETL任务，然而Spark到2.2了本身也只支持导出而不能导入pmml，这就需要一个库，这里记录这个库的坑和用法。
+              </div>
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>&#x6700;&#x8FD1;&#x5B9E;&#x5728;&#x662F;&#x5FD9;&#x5F97;&#x8981;&#x6B7B;&#x6CA1;&#x65F6;&#x95F4;&#x66F4;&#x65B0;&#x535A;&#x5BA2;&#xFF0C;&#x73B0;&#x5728;&#x56DE;&#x60F3;&#x4E00;&#x4E0B;&#x4E4B;&#x524D;&#x7684;GAN&#x6587;&#x7AE0;&#x8FD8;&#x653E;&#x7740;&#x6CA1;&#x4E0A;&#x4EE3;&#x7801;&#x5462;&#xFF0C;&#x800C;&#x4E14;&#x4F20;&#x7EDF;ML&#x7684;&#x90E8;&#x5206;&#x4E5F;&#x6709;&#x592A;&#x591A;&#x60F3;&#x5B8C;&#x5584;&#x7684;&#x5730;&#x65B9;&#xFF0C;&#x4F46;&#x613F;&#x540E;&#x9762;&#x80FD;&#x6709;&#x5927;&#x5757;&#x7684;&#x65F6;&#x95F4;&#x628A;&#x535A;&#x5BA2;&#x641E;&#x641E;&#x5427;&#xFF0C;&#x4E0D;&#x8FC7;&#x6211;&#x89C9;&#x5F97;&#x53EF;&#x80FD;&#x6BD4;&#x8F83;&#x60B2;&#x89C2;&#xFF08;</p>
+<h2 id="&#x73AF;&#x5883;&#x95EE;&#x9898;"><a href="#&#x73AF;&#x5883;&#x95EE;&#x9898;" class="headerlink" title="&#x73AF;&#x5883;&#x95EE;&#x9898;"></a>&#x73AF;&#x5883;&#x95EE;&#x9898;</h2><p>JPMML&#x4F53;&#x7CFB;&#x6BD4;&#x8F83;&#x590D;&#x6742;&#xFF0C;&#x5728;Spark&#x65B9;&#x9762;&#xFF0C;&#x4ECE;&#x4F9D;&#x8D56;&#x7684;&#x9876;&#x7AEF;&#x6765;&#x770B;&#xFF0C;jpmml-evaluator-spark&#x662F;&#x7528;&#x4E8E;Spark&#x73AF;&#x5883;&#x7684;&#x5BF9;pmml-evaluator&#x7684;&#x5C01;&#x88C5;&#x5E93;&#x3001;pmml-evaluator&#x7528;&#x4E8E;&#x505A;&#x9884;&#x6D4B;&#x3001;pmml-model&#x662F;&#x7B97;&#x6CD5;&#x5E93;/&#x6A21;&#x578B;&#x5E93;&#x3002;</p>
+<p>&#x8FD9;&#x91CC;&#x5B58;&#x5728;&#x4E00;&#x4E2A;&#x95EE;&#x9898;&#xFF1A;&#x5728;&#x67D0;&#x4E9B;&#x53D1;&#x884C;&#x7248;&#x7684;Spark&#x5F53;&#x4E2D;&#xFF0C;Spark MLLib&#x5185;&#x90E8;&#x5F15;&#x7528;&#x4E86;&#x8001;&#x7248;&#x672C;&#x7684;model&#x5E93;&#xFF08;1.2.15&#xFF09;&#xFF0C;&#x5982;&#x679C;&#x6B64;&#x65F6;&#x5728;pom&#x91CC;&#x5F15;&#x5165;&#x6700;&#x8FD1;&#xFF08;2017.11.23&#xFF09;&#x7248;&#x7684;model&#x5E93;&#xFF08;1.3.8&#xFF09;&#xFF0C;&#x5728;&#x96C6;&#x7FA4;&#x4E0A;&#x5C31;&#x4F1A;&#x62A5;&#x9519;&#xFF0C;&#x4ECE;&#x6E90;&#x7801;&#x6765;&#x770B;&#xFF0C;&#x6BD4;&#x5982;pmml-evaluator&#x5728;&#x89E3;&#x6790;pmml&#x65F6;&#x770B;&#x5230;&#x7684;&#x672C;&#x5E94;&#x8BE5;&#x662F;org.dmg.pmml.tree.TreeModel&#xFF0C;&#x800C;&#x5B9E;&#x9645;&#x770B;&#x5230;&#x7684;&#x662F;org.dmg.pmml.TreeModel&#xFF0C;&#x5339;&#x914D;&#x4E0D;&#x5230;&#x7C7B;&#x578B;&#xFF0C;&#x5219;&#x5BFC;&#x81F4;pmml&#x6587;&#x4EF6;&#x89E3;&#x6790;&#x5931;&#x8D25;&#x3002;</p>
+<p>&#x4F9D;&#x8D56;&#x7684;&#x4F9D;&#x8D56;&#x95EE;&#x9898;&#x9700;&#x8981;&#x6539;POM&#x89E3;&#x51B3;&#xFF0C;&#x5728;&#x4E0A;&#x9762;&#x4E09;&#x4E2A;&#x5305;&#x4E4B;&#x5916;&#xFF0C;&#x8FD8;&#x6709;&#x4E00;&#x4E2A;&#x6E38;&#x79BB;&#x5728;&#x4E0A;&#x9762;&#x4F9D;&#x8D56;&#x8DEF;&#x5F84;&#x5916;&#x7684;&#x5305;pmml-sparkml&#xFF0C;&#x5B83;&#x662F;&#x5BF9;MLLib&#x7684;&#x652F;&#x6301;&#x5E93;&#xFF0C;&#x771F;&#x6B63;&#x7684;&#x5751;&#x5728;&#x4E8E;&#x4F5C;&#x8005;&#x5728;&#x8FD9;&#x4E2A;repo&#x91CC;&#x544A;&#x8BC9;&#x4E86;&#x4F60;&#x6709;&#x8FD9;&#x4E2A;&#x95EE;&#x9898;&#xFF0C;&#x7136;&#x800C;&#x5728;&#x4F60;&#x771F;&#x9700;&#x8981;&#x7684;jpmml-evaluator-spark&#x9879;&#x76EE;&#x91CC;&#x6CA1;&#x6709;&#x7ED9;&#x51FA;&#x5B8C;&#x6574;&#x7684;&#x8BE6;&#x89E3;&#xFF0C;&#x5E76;&#x4E14;&#x767E;&#x5EA6;/Google&#x5230;&#x7684;&#x5E16;&#x5B50;&#x91CC;&#x5BF9;&#x8FD9;&#x4E2A;repo&#x53EA;&#x5B57;&#x672A;&#x63D0;&#xFF08;&#x6211;&#x4F3C;&#x4E4E;&#x5728;&#x4EC0;&#x4E48;&#x5730;&#x65B9;&#x770B;&#x5230;&#x8FC7;&#x4E00;&#x53E5;&#x4E0D;&#x8981;care&#x8FD9;&#x4E2A;repo&#x2026;&#xFF09;&#xFF0C;&#x770B;&#x6765;&#x8FD8;&#x662F;&#x8981;&#x628A;&#x65E0;&#x5173;&#x7684;repo&#x7684;README&#x4E5F;&#x770B;&#x4E00;&#x770B;&#x3002;</p>
+<p>&#x8FD8;&#x6709;&#x4E00;&#x4E2A;&#x5751;&#x662F;&#xFF0C;jpmml-evaluator-spark&#x9879;&#x76EE;&#x5728;maven&#x5B98;&#x65B9;&#x4ED3;&#x5E93;&#x6700;&#x9AD8;&#x5230;1.0.0&#xFF08;2017.11.23&#xFF09;&#xFF0C;&#x5B83;&#x652F;&#x6301;4.2&#x7248;&#x672C;&#x7684;pmml&#x6587;&#x4EF6;&#xFF0C;&#x800C;&#x5982;&#x679C;&#x60F3;&#x652F;&#x6301;4.3&#x7248;&#x672C;&#x7684;pmml&#xFF0C;&#x5219;&#x9700;&#x8981;&#x81EA;&#x5DF1;&#x4E0B;&#x8F7D;1.1-SNAPSHOT&#x5E76;&#x4E14;maven clean install&#x5230;&#x672C;&#x5730;.m2&#xFF0C;&#x8FD9;&#x4E2A;&#x95EE;&#x9898;&#x5728;README&#x5F53;&#x4E2D;&#x4E5F;&#x6CA1;&#x6709;&#x63D0;&#x53CA;&#x3002;</p>
+<p>&#x6587;&#x6863;&#x8BF4;&#x8981;&#x4ECE;&#x96C6;&#x7FA4;&#x73AF;&#x5883;&#x4E2D;&#x79FB;&#x9664;&#x4E0B;&#x9762;&#x4E24;&#x4E2A;&#x5305;&#xFF1A;<code>$SPARK_HOME/jars/pmml-model-1.2.15.jar</code>&#x3001;<code>$SPARK_HOME/jars/pmml-schema-1.2.15.jar</code>&#xFF0C;&#x4F46;&#x662F;&#x5728;EMR&#x4E0A;&#x5E76;&#x6CA1;&#x6709;&#x5FC5;&#x8981;&#x8FD9;&#x4E48;&#x505A;&#x3002;</p>
+<p>&#x4E0B;&#x9762;&#x8FD9;&#x4E24;&#x4E2A;&#x4F9D;&#x8D56;&#x662F;&#x6CA1;&#x5FC5;&#x8981;&#x5BFC;&#x5165;&#x7684;&#xFF0C;&#x56E0;&#x4E3A;&#x5728;jpmml-evaluator-spark&#x91CC;&#x5DF2;&#x7ECF;&#x7ED9;&#x4F60;&#x5BFC;&#x4E86;&#x6B63;&#x786E;&#x7684;&#x7248;&#x672C;&#xFF0C;&#x800C;&#x4E0B;&#x9762;1.3.8&#x70B9;&#x7B97;&#x6CD5;&#x5E93;&#x5374;&#x5728;JPMML-SparkML&#x9879;&#x76EE;&#x91CC;&#x4E5F;&#x53EA;&#x5B57;&#x672A;&#x63D0;&#xFF1A;</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.jpmml<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>pmml-model<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.3.8<span class="tag">&lt;/<span class="name">version</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.jpmml<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>pmml-evaluator<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.3.10<span class="tag">&lt;/<span class="name">version</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></div></pre></td></tr></table></figure>
+<h2 id="&#x96C6;&#x7FA4;&#x914D;&#x7F6E;"><a href="#&#x96C6;&#x7FA4;&#x914D;&#x7F6E;" class="headerlink" title="&#x96C6;&#x7FA4;&#x914D;&#x7F6E;"></a>&#x96C6;&#x7FA4;&#x914D;&#x7F6E;</h2><p>&#x5E9F;&#x4E86;&#x4E00;&#x8F66;&#x8BDD;&#xFF0C;&#x6240;&#x4EE5;&#x5B9E;&#x9645;&#x8981;&#x505A;&#x7684;&#x5C31;&#x662F;&#xFF0C;&#x5728;pom&#x4E2D;&#x5BFC;&#x5165;Spark&#x81EA;&#x8EAB;&#x7684;MLLib&#x7684;&#x65B9;&#x5F0F;&#x8981;&#x4F5C;&#x4FEE;&#x6539;&#xFF0C;&#x7ED5;&#x5F00;pmml&#xFF1A;</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.apache.spark<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spark-mllib_2.11<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>${spark.version}<span class="tag">&lt;/<span class="name">version</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">scope</span>&gt;</span>provided<span class="tag">&lt;/<span class="name">scope</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">exclusions</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">exclusion</span>&gt;</span></div><div class="line">            <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.jpmml<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></div><div class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>pmml-model<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></div><div class="line">        <span class="tag">&lt;/<span class="name">exclusion</span>&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">exclusions</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></div></pre></td></tr></table></figure>
+<p>&#x5E76;&#x4E14;&#x9700;&#x8981;&#x901A;&#x8FC7;maven&#x7684;shade&#x63D2;&#x4EF6;&#x6539;&#x53D8;&#x547D;&#x540D;&#x7A7A;&#x95F4;&#x6765;&#x4F7F;&#x7528;&#x6B63;&#x786E;&#x7684;JPMML-Model&#x4E2D;&#x7684;org.dmg.pmml.*&#x548C;org.jpmml.*&#xFF1A;</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">plugin</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.apache.maven.plugins<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>maven-shade-plugin<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>2.3<span class="tag">&lt;/<span class="name">version</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">executions</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">execution</span>&gt;</span></div><div class="line">            <span class="tag">&lt;<span class="name">phase</span>&gt;</span>package<span class="tag">&lt;/<span class="name">phase</span>&gt;</span></div><div class="line">            <span class="tag">&lt;<span class="name">goals</span>&gt;</span></div><div class="line">                <span class="tag">&lt;<span class="name">goal</span>&gt;</span>shade<span class="tag">&lt;/<span class="name">goal</span>&gt;</span></div><div class="line">            <span class="tag">&lt;/<span class="name">goals</span>&gt;</span></div><div class="line">            <span class="tag">&lt;<span class="name">configuration</span>&gt;</span></div><div class="line">                <span class="tag">&lt;<span class="name">filters</span>&gt;</span></div><div class="line">                    <span class="tag">&lt;<span class="name">filter</span>&gt;</span></div><div class="line">                        <span class="tag">&lt;<span class="name">artifact</span>&gt;</span>*:*<span class="tag">&lt;/<span class="name">artifact</span>&gt;</span></div><div class="line">                        <span class="tag">&lt;<span class="name">excludes</span>&gt;</span></div><div class="line">                            <span class="tag">&lt;<span class="name">exclude</span>&gt;</span>META-INF/*.SF<span class="tag">&lt;/<span class="name">exclude</span>&gt;</span></div><div class="line">                            <span class="tag">&lt;<span class="name">exclude</span>&gt;</span>META-INF/*.DSA<span class="tag">&lt;/<span class="name">exclude</span>&gt;</span></div><div class="line">                            <span class="tag">&lt;<span class="name">exclude</span>&gt;</span>META-INF/*.RSA<span class="tag">&lt;/<span class="name">exclude</span>&gt;</span></div><div class="line">                        <span class="tag">&lt;/<span class="name">excludes</span>&gt;</span></div><div class="line">                    <span class="tag">&lt;/<span class="name">filter</span>&gt;</span></div><div class="line">                <span class="tag">&lt;/<span class="name">filters</span>&gt;</span></div><div class="line">                <span class="tag">&lt;<span class="name">transformers</span>&gt;</span></div><div class="line">                    <span class="tag">&lt;<span class="name">transformer</span> <span class="attr">implementation</span>=<span class="string">&quot;org.apache.maven.plugins.shade.resource.AppendingTransformer&quot;</span>&gt;</span></div><div class="line">                        <span class="tag">&lt;<span class="name">resource</span>&gt;</span>META-INF/spring.handlers<span class="tag">&lt;/<span class="name">resource</span>&gt;</span></div><div class="line">                    <span class="tag">&lt;/<span class="name">transformer</span>&gt;</span></div><div class="line">                    <span class="tag">&lt;<span class="name">transformer</span> <span class="attr">implementation</span>=<span class="string">&quot;org.apache.maven.plugins.shade.resource.ManifestResourceTransformer&quot;</span>&gt;</span></div><div class="line">                        <span class="tag">&lt;<span class="name">mainClass</span>&gt;</span>com.fxc.rpc.impl.member.MemberProvider<span class="tag">&lt;/<span class="name">mainClass</span>&gt;</span></div><div class="line">                    <span class="tag">&lt;/<span class="name">transformer</span>&gt;</span></div><div class="line">                    <span class="tag">&lt;<span class="name">transformer</span> <span class="attr">implementation</span>=<span class="string">&quot;org.apache.maven.plugins.shade.resource.AppendingTransformer&quot;</span>&gt;</span></div><div class="line">                        <span class="tag">&lt;<span class="name">resource</span>&gt;</span>META-INF/spring.schemas<span class="tag">&lt;/<span class="name">resource</span>&gt;</span></div><div class="line">                    <span class="tag">&lt;/<span class="name">transformer</span>&gt;</span></div><div class="line">                <span class="tag">&lt;/<span class="name">transformers</span>&gt;</span></div><div class="line">                <span class="tag">&lt;<span class="name">relocations</span>&gt;</span></div><div class="line">                    <span class="tag">&lt;<span class="name">relocation</span>&gt;</span></div><div class="line">                        <span class="tag">&lt;<span class="name">pattern</span>&gt;</span>org.dmg.pmml<span class="tag">&lt;/<span class="name">pattern</span>&gt;</span></div><div class="line">                        <span class="tag">&lt;<span class="name">shadedPattern</span>&gt;</span>org.shaded.dmg.pmml<span class="tag">&lt;/<span class="name">shadedPattern</span>&gt;</span></div><div class="line">                    <span class="tag">&lt;/<span class="name">relocation</span>&gt;</span></div><div class="line">                    <span class="tag">&lt;<span class="name">relocation</span>&gt;</span></div><div class="line">                        <span class="tag">&lt;<span class="name">pattern</span>&gt;</span>org.jpmml<span class="tag">&lt;/<span class="name">pattern</span>&gt;</span></div><div class="line">                        <span class="tag">&lt;<span class="name">shadedPattern</span>&gt;</span>org.shaded.jpmml<span class="tag">&lt;/<span class="name">shadedPattern</span>&gt;</span></div><div class="line">                    <span class="tag">&lt;/<span class="name">relocation</span>&gt;</span></div><div class="line">                <span class="tag">&lt;/<span class="name">relocations</span>&gt;</span></div><div class="line">            <span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></div><div class="line">        <span class="tag">&lt;/<span class="name">execution</span>&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">executions</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">plugin</span>&gt;</span></div></pre></td></tr></table></figure>
+<p>&#x8FD9;&#x79CD;&#x914D;&#x7F6E;&#x53EF;&#x4EE5;&#x4FDD;&#x8BC1;&#x5728;EMR&#x96C6;&#x7FA4;&#x4E0A;&#x80FD;&#x8BC6;&#x522B;4.2&#x548C;4.3&#x7248;&#x672C;&#x7684;pmml&#x3002;&#x81F3;&#x4E8E;&#x672C;&#x5730;run&#xFF0C;&#x5219;&#x4E0D;&#x8981;&#x641E;&#x8FD9;&#x4E00;&#x5927;&#x5768;&#x914D;&#x7F6E;&#xFF0C;&#x628A;&#x90A3;&#x4E24;&#x4E2A;&#x5305;&#x5BFC;&#x8FDB;&#x6765;&#x5C31;&#x884C;&#xFF0C;&#x4F46;&#x662F;&#x5728;&#x96C6;&#x7FA4;&#x4E0A;&#x5C31;run&#x4E0D;&#x4E86;&#x4E86;&#x3002;&#x56E0;&#x4E3A;&#x6BCF;&#x4E2A;&#x4EBA;&#x672C;&#x5730;&#x73AF;&#x5883;&#x53C8;&#x4E0D;&#x4E00;&#x6837;&#xFF0C;&#x8FD9;&#x91CC;&#x5C31;&#x4E0D;&#x5199;&#x4E86;&#x3002;</p>
+<h2 id="Spark&#x4EE3;&#x7801;&#x5F00;&#x53D1;"><a href="#Spark&#x4EE3;&#x7801;&#x5F00;&#x53D1;" class="headerlink" title="Spark&#x4EE3;&#x7801;&#x5F00;&#x53D1;"></a>Spark&#x4EE3;&#x7801;&#x5F00;&#x53D1;</h2><p>&#x9996;&#x5148;&#xFF0C;Spark&#x4E3B;&#x8282;&#x70B9;&#x9700;&#x8981;&#x901A;&#x8FC7;Java&#x4EE3;&#x7801;&#x8C03;&#x7528;jpmml-evaluator&#x5E93;&#x6784;&#x9020;&#x4E00;&#x4E2A;Transformer&#xFF0C;&#x8FD9;&#x4E2A;Transformer&#x76F8;&#x5F53;&#x4E8E;&#x4E00;&#x6574;&#x6761;&#x673A;&#x5668;&#x5B66;&#x4E60;pipeline&#xFF0C;&#x91CC;&#x9762;&#x53EF;&#x4EE5;&#x5305;&#x542B;&#x7279;&#x5F81;&#x5904;&#x7406;&#x548C;&#x6A21;&#x578B;&#x8BAD;&#x7EC3;&#xFF0C;&#x7136;&#x540E;&#x628A;&#x5B83;&#x5206;&#x53D1;&#x5230;&#x5B50;&#x8282;&#x70B9;&#xFF0C;&#x4F5C;&#x4E3A;&#x4E00;&#x4E2A;DataFrame&#x4E0A;&#x7684;&#x8F6C;&#x6362;&#x5668;&#xFF0C;&#x7ED9;&#x539F;&#x59CB;&#x6570;&#x636E;&#x6DFB;&#x52A0;&#x5B66;&#x4E60;&#x540E;&#x7684;&#x5217;&#xFF0C;&#x8FD9;&#x4E2A;&#x5217;&#x662F;&#x4E2A;&#x6570;&#x7EC4;&#xFF0C;&#x5305;&#x542B;&#x7279;&#x5F81;&#x5904;&#x7406;&#x7684;&#x4E2D;&#x95F4;&#x7ED3;&#x679C;&#x548C;&#x56DE;&#x5F52;/&#x5206;&#x7C7B;&#x6807;&#x7B7E;&#x3002;</p>
+<p>&#x5047;&#x8BBE;&#x73B0;&#x5728;&#x6709;&#x4E00;&#x4E2A;sklearn&#x5BFC;&#x51FA;&#x7684;lr.pmml&#xFF0C;&#x653E;&#x5728;resources&#x4E0B;&#xFF0C;Java&#x4EE3;&#x7801;&#x6784;&#x9020;Transformer&#x5982;&#x4E0B;&#xFF1A;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">LRClassifier_s3</span> </span>{</div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Transformer <span class="title">getClassifier</span><span class="params">()</span> <span class="keyword">throws</span> JAXBException, SAXException, IOException </span>{</div><div class="line">        InputStream is = LRClassifier_s3.class.getResourceAsStream(<span class="string">&quot;/lr.pmml&quot;</span>);</div><div class="line">        Evaluator evaluator = EvaluatorUtil.createEvaluator(is);</div><div class="line"></div><div class="line">        TransformerBuilder modelBuilder = <span class="keyword">new</span> TransformerBuilder(evaluator)</div><div class="line">                .withOutputCols()</div><div class="line">                .withTargetCols()</div><div class="line">                .exploded(<span class="keyword">false</span>);</div><div class="line"></div><div class="line">        Transformer transformer = modelBuilder.build();</div><div class="line">        </div><div class="line">        <span class="keyword">return</span> transformer;</div><div class="line">    }</div><div class="line">}</div></pre></td></tr></table></figure>
+<p>Scala&#x8BED;&#x8A00;&#x5199;&#x7684;Spark&#x8C03;&#x7528;&#x65B9;&#x5F0F;&#x5982;&#x4E0B;&#xFF1A;</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">object</span> <span class="title">test_s3</span> </span>{</div><div class="line">  <span class="function"><span class="keyword">def</span> <span class="title">main</span></span>(args: <span class="type">Array</span>[<span class="type">String</span>]): <span class="type">Unit</span> = {</div><div class="line">    <span class="keyword">val</span> sparkSession = <span class="type">SparkSession</span>.builder().getOrCreate()</div><div class="line"></div><div class="line">    <span class="keyword">val</span> inputPath = <span class="string">&quot;s3://dm/dataset.csv&quot;</span></div><div class="line">    <span class="keyword">val</span> inputDF = sparkSession.read.option(<span class="string">&quot;header&quot;</span>, <span class="literal">true</span>).option(<span class="string">&quot;charset&quot;</span>, <span class="string">&quot;UTF8&quot;</span>).csv(inputPath)</div><div class="line"></div><div class="line">    <span class="keyword">val</span> clf = <span class="type">LRClassifier_s3</span>.getClassifier()</div><div class="line"></div><div class="line">    <span class="keyword">val</span> resultDF = clf.transform(inputDF)</div><div class="line">    <span class="keyword">val</span> outputDF = resultDF.select(<span class="string">&quot;x0&quot;</span>, <span class="string">&quot;x1&quot;</span>, <span class="string">&quot;pmml.y&quot;</span>)</div><div class="line"></div><div class="line">    <span class="keyword">val</span> outputPath = <span class="string">&quot;s3://dm/lrtestoutput/&quot;</span></div><div class="line">    outputDF.write.option(<span class="string">&quot;header&quot;</span>, <span class="literal">true</span>).mode(<span class="type">SaveMode</span>.<span class="type">Overwrite</span>).csv(outputPath)</div><div class="line">  }</div><div class="line">}</div></pre></td></tr></table></figure>
+<p>&#x8FD9;&#x6837;&#x5C31;&#x53EF;&#x4EE5;&#x628A;&#x539F;&#x59CB;&#x6570;&#x636E;&#x7684;x0&#x3001;x1&#x52A0;&#x4E0A;&#x6807;&#x8BB0;y&#x4E00;&#x5171;&#x4E09;&#x5217;&#x5199;&#x5230;&#x8F93;&#x51FA;&#x6587;&#x4EF6;&#x91CC;&#x4E86;&#x3002;</p>
+<h2 id="Sklearn&#x5BFC;&#x51FA;&#x6A21;&#x578B;"><a href="#Sklearn&#x5BFC;&#x51FA;&#x6A21;&#x578B;" class="headerlink" title="Sklearn&#x5BFC;&#x51FA;&#x6A21;&#x578B;"></a>Sklearn&#x5BFC;&#x51FA;&#x6A21;&#x578B;</h2><p>&#x9898;&#x5916;&#x8BDD;&#xFF0C;sklearn&#x901A;&#x8FC7;&#x6D41;&#x6C34;&#x7EBF;&#x53EF;&#x4EE5;&#x628A;&#x6574;&#x4E2A;&#x673A;&#x5668;&#x5B66;&#x4E60;&#x8FC7;&#x7A0B;&#x81EA;&#x52A8;&#x5316;&#xFF0C;&#x5C06;sklearn&#x6A21;&#x578B;&#x5BFC;&#x51FA;&#xFF0C;&#x9700;&#x8981;&#x4F7F;&#x7528;&#x7684;&#x5305;&#x662F;&#xFF1A;<br><code>pip install --user git+https://github.com/jpmml/sklearn2pmml.git</code>&#x3002;</p>
+<p>&#x9700;&#x8981;&#x5BFC;&#x5165;</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">from</span> sklearn_pandas <span class="keyword">import</span> DataFrameMapper</div><div class="line"><span class="keyword">from</span> sklearn2pmml <span class="keyword">import</span> PMMLPipeline</div></pre></td></tr></table></figure>
+<p>&#x6700;&#x540E;&#x7528;&#x5E93;&#x5305;&#x4E2D;&#x7684;&#x5B50;&#x7C7B;&#x4E32;&#x8054;&#x7BA1;&#x9053;&#xFF0C;&#x800C;&#x4E0D;&#x662F;&#x4F7F;&#x7528;sklearn&#x81EA;&#x5DF1;&#x7684;pipeline&#xFF0C;&#x7136;&#x540E;&#x4E00;&#x5B9A;&#x8981;fit&#xFF1A;</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">pipeline_pmml = PMMLPipeline([step1, step2, step3])</div><div class="line">pipeline_pmml.fit(X_train, y_train)</div></pre></td></tr></table></figure>
+<p>&#x5BFC;&#x51FA;&#x7684;&#x65F6;&#x5019;&#xFF0C;&#x4E00;&#x5B9A;&#x8981;&#x6307;&#x5B9A;&#x5217;&#x5934;&#xFF0C;&#x5426;&#x5219;&#x6A21;&#x578B;&#x5C06;&#x65E0;&#x6CD5;&#x548C;&#x539F;&#x59CB;&#x6587;&#x4EF6;&#x7ED3;&#x6784;&#x5339;&#x914D;&#xFF1A;</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">from</span> sklearn2pmml <span class="keyword">import</span> make_pmml_pipeline</div><div class="line">pipeline_pmml = make_pmml_pipeline(pipeline_pmml, active_fields = X_train.columns, target_fields = y_train.columns)</div><div class="line"></div><div class="line"><span class="keyword">from</span> sklearn2pmml <span class="keyword">import</span> sklearn2pmml</div><div class="line">sklearn2pmml(pipeline_pmml, <span class="string">&apos;./lr.pmml&apos;</span>)</div></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+
+    <footer class="post-footer">
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/机器学习/生成对抗网络/" rel="next" title="生成对抗网络">
+                <i class="fa fa-chevron-left"></i> 生成对抗网络
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/icon.jpeg"
+               alt="アカリ" />
+          <p class="site-author-name" itemprop="name">アカリ</p>
+          <p class="site-description motion-element" itemprop="description">很羡慕工作后辞职读研的人，能腾出一两年的大片时间来专心学习某个自己喜欢的领域的知识技能其实是一件非常幸福的事……</p>
+        </div>
+        <nav class="site-state motion-element">
+        
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/">
+                <span class="site-state-item-count">18</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">3</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#环境问题"><span class="nav-number">1.</span> <span class="nav-text">环境问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#集群配置"><span class="nav-number">2.</span> <span class="nav-text">集群配置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Spark代码开发"><span class="nav-number">3.</span> <span class="nav-text">Spark代码开发</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Sklearn导出模型"><span class="nav-number">4.</span> <span class="nav-text">Sklearn导出模型</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">アカリ</span>
+</div>
+
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.0"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.0"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=default"></script>
+  
+
+
+  
+
+  
+
+  
+
+
+</body>
+</html>
